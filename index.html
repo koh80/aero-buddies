@@ -1,0 +1,1338 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aero Buddies</title><style>
+:root{font-family:system-ui,'Trebuchet MS',sans-serif;color:#243c55;background:#e6f7ff}*{box-sizing:border-box}body{margin:0}main{max-width:980px;margin:auto;padding:14px}header{display:flex;align-items:center;justify-content:space-between;gap:10px}h1{font-size:clamp(22px,4vw,35px);margin:8px 0}h2{margin:5px 0 12px}.pill{border-radius:20px;background:#fff;padding:7px 12px;font-weight:800}.panel{background:white;border:3px solid #b8e2f3;border-radius:24px;padding:16px;box-shadow:0 7px 0 #c7e8f3;margin-top:12px}.menu{display:grid;grid-template-columns:1fr 1fr;gap:15px}.choice{background:#f0faff;border:3px solid #9fd4ec;border-radius:20px;padding:18px;cursor:pointer;text-align:center;font-weight:900;font-size:20px}.choice .emoji{font-size:65px;display:block}.choice:hover{background:#dbf5ff}button{border:0;background:#378bca;color:white;border-radius:14px;padding:12px 15px;font-weight:850;font-size:15px;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.4;cursor:default}button.alt{background:#f3aa36;color:#402f1b}button.red{background:#d85162}button.grey{background:#657b93}button.good{background:#2caa80}.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}.hidden{display:none!important}.muted{color:#57728b}.big{font-size:22px;font-weight:900}.score{background:#fff1bc;border-radius:13px;padding:8px 12px;font-weight:900}.stage{position:relative;border-radius:18px;overflow:hidden;background:#e8f5ff;border:3px solid #b2d8ee;margin:12px 0;min-height:250px}.engine{display:flex;justify-content:space-around;align-items:center;gap:5px;min-height:170px;padding:14px}.slot{width:24%;min-height:110px;border:4px dashed #96b4c6;border-radius:20px;background:#f8fcff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;font-size:13px;text-align:center;cursor:pointer}.slot.done{border:4px solid #3caf82;background:#d6fae8}.slot .sym{font-size:36px;filter:grayscale(1);opacity:.35}.slot.done .sym{filter:none;opacity:1}.belt{background:repeating-linear-gradient(90deg,#93a4b3 0 18px,#b9c5ce 18px 36px);border:5px solid #647c8c;border-radius:15px;min-height:94px;display:flex;align-items:center;gap:12px;padding:12px;overflow:hidden}.part{background:#fff;border:3px solid #c6e0f0;border-radius:13px;min-width:90px;padding:8px;text-align:center;cursor:pointer;font-weight:800;touch-action:manipulation}.part span{display:block;font-size:28px}.part.selected{border-color:#f1a92c;background:#fff2b6}.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.controls button{min-height:56px}.marsh-stage{height:410px;background:#c5d8df;position:relative;overflow:hidden;border-radius:15px;border:3px solid #a0c1cd}.road{position:absolute;top:0;bottom:0;left:40%;width:20%;background:#e5ebec;border-left:3px solid white;border-right:3px solid white}.road:after{content:'';position:absolute;left:50%;top:0;height:100%;border-left:3px dashed #f5b936}.lane{position:absolute;width:34%;height:46px;background:#b3d0de;border:2px dashed #759caf;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#395b72}.lane.left{left:3%}.lane.right{right:3%}.lane.target{background:#f9e79e;border:3px solid #f2ad29}.airplane{position:absolute;left:50%;top:0;transform:translate(-50%,-50%) rotate(180deg);font-size:54px;z-index:3;filter:drop-shadow(2px 3px 1px #7199a9)}.marshaler{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:38px;z-index:3;text-align:center}.signal{font-size:12px;background:#fff;padding:2px 7px;border-radius:9px}.hazard{position:absolute;left:47%;font-size:34px;z-index:4}.message{min-height:50px;background:#fff8d9;border-radius:13px;padding:12px;font-weight:750}.hint{font-size:13px;color:#526c80}.footer{font-size:12px;color:#668299;margin-top:20px;text-align:center}@media(max-width:560px){.menu{grid-template-columns:1fr}.panel{padding:10px}.controls{gap:5px}.controls button{font-size:12px;padding:9px 4px}.marsh-stage{height:360px}.slot{font-size:11px}.slot .sym{font-size:28px}.part{min-width:76px;font-size:12px}}
+.branch{position:absolute;height:13px;background:#e5ebec;border-top:2px solid white;border-bottom:2px solid white;width:40%;z-index:1}.branch.left{left:0}.branch.right{right:0}.branch:after{content:"";position:absolute;left:0;right:0;top:5px;border-top:2px dashed #f5b936}.lane{z-index:2;background:rgba(179,208,222,.72)}.lane.target{background:rgba(249,231,158,.8)}.airplane{transition:none;will-change:top,left,transform}.marsh-stage{touch-action:manipulation}.result-overlay{position:absolute;inset:0;background:rgba(27,58,81,.88);color:white;z-index:12;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px}.result-overlay>div{background:#fff;color:#243c55;border-radius:22px;padding:20px;max-width:340px;width:100%}.result-overlay h3{margin:0 0 12px;font-size:28px}.status-note{font-size:13px;color:#59778c}
+
+/* v3: moving conveyor and airport-style directional signs */
+.belt{position:relative;display:block;overflow:hidden;height:116px;padding:9px 0;background:repeating-linear-gradient(90deg,#8d9fad 0 17px,#bac7d0 17px 34px);background-size:68px 100%;animation:beltRoll 1.4s linear infinite}
+@keyframes beltRoll{to{background-position:-68px 0}}
+.belt-track{display:flex;align-items:center;gap:12px;width:max-content;height:100%;animation:conveyorMove 15s linear infinite;will-change:transform}
+.belt-track .part{flex:0 0 116px;min-width:116px;height:88px;display:flex;flex-direction:column;justify-content:center;user-select:none;touch-action:none;cursor:grab}
+.belt-track .part:active{cursor:grabbing}
+@keyframes conveyorMove{from{transform:translateX(0)}to{transform:translateX(-1024px)}}
+.drag-ghost{position:fixed!important;z-index:9999;pointer-events:none;transform:translate(-50%,-50%);opacity:.88;box-shadow:0 8px 18px #2448}
+.slot{transition:background .15s,border-color .15s}.slot:hover{border-color:#efa52d;background:#fff5cd}
+.lane{display:none!important}
+.lane-sign{position:absolute;z-index:2;min-width:67px;text-align:center;background:#f6c93b;border:3px solid #272e32;color:#20282e;font-weight:950;font-size:16px;border-radius:3px;padding:5px 7px;box-shadow:2px 3px 0 #3448}
+.lane-sign.left{left:5%}.lane-sign.right{right:5%}
+.lane-sign.target{background:#fff1a0;outline:3px solid #e59b00;outline-offset:2px}
+.sign-arrow{font-size:19px}
+.branch{height:24px;z-index:1;background:#e5ebec;border-top:3px solid white;border-bottom:3px solid white}
+.branch:after{top:9px;border-top:3px dashed #f5b936}
+@media(max-width:560px){.belt-track .part{flex-basis:94px;min-width:94px}.lane-sign{min-width:47px;font-size:12px;padding:4px 2px}.lane-sign.left{left:3%}.lane-sign.right{right:3%}}
+
+.engine{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:15px}.slot{width:100%;min-height:130px}.slot .sym{font-size:initial;filter:none;opacity:1}.slot .sym svg{max-width:100%;height:54px}.slot.done .sym{filter:none}.belt-track .part{flex-basis:136px;min-width:136px;height:98px}.part span{height:57px}.part span svg{max-width:100%}.belt{height:126px}.belt-track{animation-duration:45s}@keyframes conveyorMove{from{transform:translateX(0)}to{transform:translateX(-2368px)}}
+.marsh-stage{height:570px}.lane-sign{font-size:14px;min-width:60px}.airplane{font-size:48px;transform-origin:center center}.marshaler{font-size:initial;bottom:4px}.marshaler svg{width:76px;height:95px;display:block}.signal{font-size:11px}.branch{height:25px}
+@media(max-width:560px){.engine{grid-template-columns:repeat(2,minmax(0,1fr))}.slot{min-height:105px}.marsh-stage{height:490px}.belt-track .part{min-width:136px;flex-basis:136px}}
+
+.engine-type{font-weight:900;background:#e3f3ff;border-radius:12px;padding:10px 14px;margin-top:12px;color:#24557a}
+.airplane{width:66px;height:86px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(2px 3px 2px #7295a5)}.airplane svg{width:100%;height:100%}
+.bird-warning{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#fff1a4;border:2px solid #e9a92e;border-radius:12px;padding:7px 11px;z-index:8;font-weight:900;text-align:center;font-size:clamp(11px,2vw,17px);white-space:nowrap}
+.hazard{left:-22%;font-size:clamp(24px,5vw,42px);white-space:nowrap;pointer-events:none}
+
+/* v6: emergency exit, alignment indicator, more distinct component families */
+.emergency-route{position:absolute;left:40%;width:20%;height:15%;top:85%;background:repeating-linear-gradient(0deg,#f8e3a7 0 8px,#e5ebec 8px 16px);opacity:.6;pointer-events:none}
+.emergency-sign{position:absolute;right:4%;bottom:2%;background:#f4c63c;color:#243e53;border:2px solid #263f4c;border-radius:4px;padding:5px 8px;font-size:11px;font-weight:900;z-index:2}
+.airplane{width:68px;height:85px;font-size:initial;transform-origin:center center}
+.airplane svg{display:block;width:100%;height:100%}
+.slot b{font-size:12px}.part{font-size:12px}.engine-type{font-weight:900;color:#285a77}
+
+.leaderboards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}.leaderboard{background:#f1faff;border:2px solid #c2ddea;border-radius:15px;padding:12px}.leaderboard h3{margin:0 0 9px}.leaderboard ol{padding-left:25px;margin:5px 0}.leaderboard li{padding:5px 0;border-bottom:1px solid #d7e7f0}.leaderboard li .record{display:flex;align-items:center;gap:6px}.leaderboard li .record strong{flex:1;overflow-wrap:anywhere}.leaderboard .delete-score{font-size:12px;padding:4px 8px;background:#b64b5b}.leaderboard .clear-scores{margin-top:10px;font-size:12px;padding:7px 10px;background:#657b93}.score-entry{position:fixed;inset:0;z-index:999;background:#17364fcf;display:flex;align-items:center;justify-content:center;padding:20px}.score-entry-card{background:white;border-radius:20px;padding:24px;max-width:420px;width:100%;box-shadow:0 12px 35px #172d3d55}.score-entry-card input{display:block;width:100%;padding:12px;font-size:18px;border:2px solid #9fc9e1;border-radius:10px;margin:8px 0 14px}.entry-actions{display:flex;gap:10px}@media(max-width:560px){.leaderboards{grid-template-columns:1fr}}
+.balance-mode{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.balance-mode button{flex:1;min-width:160px}.balance-meter{width:min(94%,400px);margin:0 auto 12px;text-align:center;font-weight:800}.meter-track{height:14px;background:#d6e0e8;border-radius:12px;overflow:hidden;margin:7px 0}.meter-track>div{height:100%;width:0%;background:#e99e36;transition:width .25s}.balance-meter small{font-weight:600;color:#49657c}.help-panel{margin-top:12px;background:#e8f5ff;border:1px solid #b9d9ee;padding:12px;border-radius:14px}.help-panel p{line-height:1.5;margin:9px 0}.help-panel button{margin:4px}.rotor-slot.selected .rotor-shape{stroke:#f0a520;stroke-width:6}.rotor-spin{transform-origin:180px 180px;animation:balSpin .75s linear infinite}.rotor-spin.shaky{animation:balWobble .32s linear infinite}@keyframes balSpin{to{transform:rotate(360deg)}}@keyframes balWobble{0%,100%{transform:rotate(-3deg) translateX(-5px)}50%{transform:rotate(3deg) translateX(5px)}}
+
+/* v15: colourful, top-down arcade airfield presentation */
+body{background:#cbe8df}
+#marshalPage{background:#fffdf6;border-color:#92cfc4}
+#marshalPage h2{color:#214d5b}
+#marshalPage .marsh-stage{height:min(65vh,630px);min-height:450px;border:5px solid #507b85;border-radius:20px;background:radial-gradient(circle at 15% 17%,#9dd36e 0 6%,transparent 7%),radial-gradient(circle at 84% 72%,#9dd36e 0 7%,transparent 8%),repeating-linear-gradient(35deg,#85be77 0 25px,#81b973 25px 50px);box-shadow:inset 0 0 0 5px #c4dba0,0 5px 0 #517a85}
+#marshalPage .airfield-scenery{position:absolute;inset:0;pointer-events:none;z-index:0}
+#marshalPage .grass-strip{position:absolute;background:#b1d77e;border:3px solid #d7e9a5;border-radius:50%;opacity:.85}
+#marshalPage .grass-one{width:27%;height:21%;top:-10%;left:-5%}
+#marshalPage .grass-two{width:26%;height:23%;right:-8%;bottom:-8%}
+#marshalPage .terminal-building{position:absolute;top:5%;left:3%;width:24%;height:11%;background:#627e8b;border:4px solid #344e5b;border-radius:8px;box-shadow:5px 6px 0 #48656b;transform:rotate(-2deg);font-size:clamp(9px,1.4vw,15px);font-weight:900;color:#fff;text-align:center}
+#marshalPage .terminal-roof{background:#c5dce3;color:#29495d;padding:4px 0}
+#marshalPage .terminal-windows{color:#a9d8e7;letter-spacing:2px}
+#marshalPage .hangar{position:absolute;right:3%;top:6%;width:19%;padding:12px 2px;text-align:center;background:#d4e2d9;border:4px solid #54736f;border-radius:7px;color:#476460;font-weight:900;font-size:clamp(9px,1.4vw,14px);box-shadow:4px 5px #688d75}
+#marshalPage .windsock{position:absolute;right:8%;top:39%;font-size:28px;filter:drop-shadow(2px 2px #497d66)}
+#marshalPage .service-cart{position:absolute;left:8%;bottom:8%;font-size:34px;transform:rotate(-8deg)}
+#marshalPage .cones{position:absolute;right:5%;bottom:10%;font-size:16px;color:#e97139;letter-spacing:4px}
+#marshalPage .tree{position:absolute;font-size:23px;filter:drop-shadow(2px 2px #4e8d53)}
+#marshalPage .tree-a{left:3%;top:45%}#marshalPage .tree-b{right:4%;top:62%}
+#marshalPage .helipad{position:absolute;left:8%;top:70%;border:3px solid #f3f1d5;border-radius:50%;width:42px;height:42px;text-align:center;line-height:36px;color:#fff;font-size:24px;font-weight:900;background:#648e82}
+#marshalPage .road{z-index:1;background:repeating-linear-gradient(0deg,#a9b6b5 0 32px,#abb9b7 32px 64px);border-left:4px solid #e8ece7;border-right:4px solid #e8ece7;box-shadow:0 0 0 3px #748b82}
+#marshalPage .road:after{border-left:3px dashed #ffd048}
+#marshalPage .branch{z-index:1;height:34px;background:repeating-linear-gradient(90deg,#a7b5b3 0 38px,#aab8b6 38px 76px);border-top:3px solid #f0f4e8;border-bottom:3px solid #f0f4e8}
+#marshalPage .branch:after{top:13px;border-top:3px dashed #f5c83f}
+#marshalPage .lane-sign{z-index:5;background:#fbd34b;border:3px solid #243b3e;box-shadow:3px 4px #365d58;border-radius:5px;font-size:16px}
+#marshalPage .lane-sign.target{background:#fff2a3;outline:4px solid #ff8e35}
+#marshalPage .emergency-route{z-index:1}
+#marshalPage .emergency-sign{z-index:5}
+#marshalPage .airplane{z-index:7;filter:drop-shadow(3px 5px 2px #526e69)}
+#marshalPage .marshaler{z-index:7;filter:drop-shadow(1px 3px 1px #415d52)}
+#marshalPage .hazard,#marshalPage .bird-warning{z-index:9}
+#marshalPage .controls button{font-size:clamp(12px,1.7vw,18px);min-height:64px;border:2px solid rgba(255,255,255,.65);box-shadow:0 4px 0 rgba(28,64,78,.25);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#marshalPage .controls button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(28,64,78,.25)}
+#marshalPage .message{background:#fff3c4;border:2px solid #f2d98b}
+@media(max-width:600px){#marshalPage .marsh-stage{height:510px;min-height:410px}#marshalPage .terminal-building{width:27%}#marshalPage .hangar{width:24%}#marshalPage .controls button{min-height:58px}}
+
+
+/* Version 18: integrated engine assembly hangar */
+.engine-mission{background:#f0f6fc;color:#18334b;border:3px solid #8ac4e5}
+.engine-mission h2{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.engine-bay{font-size:12px;letter-spacing:1px;color:#fff;background:#244760;padding:8px 12px;border-radius:8px}
+.engine-instruction{font-size:15px;color:#3b5870}
+.engine-type{background:#163a55;color:#fff;padding:12px 17px;border-radius:10px;font-size:17px;font-weight:800;margin-bottom:10px}
+.engine-hangar{background:linear-gradient(180deg,#b4dff8 0%,#d8effb 44%,#8da4b2 45%,#687d8b 100%);border:3px solid #6da2c0;border-radius:16px;overflow:hidden;position:relative}
+.engine-hangar:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 15%,#ffffff30 15.2% 15.5%,transparent 15.7% 30%),linear-gradient(180deg,transparent 55%,#d7e0e55e 56%,transparent 57%);pointer-events:none}
+.engine-worktop{position:relative;padding:16px 15px 28px}
+.engine-board-label{display:flex;justify-content:space-between;gap:12px;color:#fff;background:#173d59d9;padding:10px 14px;border-radius:8px;font-size:12px;font-weight:800;letter-spacing:.5px}
+.engine-board-label span{color:#c8e7f7}
+.engine-preview{display:flex;justify-content:center;align-items:center;min-height:165px;margin:10px auto 4px;max-width:1060px}
+.engine-preview svg{width:100%;height:auto;max-height:220px;filter:drop-shadow(0 9px 4px #1b374653)}
+.engine-mission .engine{display:flex;flex-wrap:nowrap;gap:5px;padding:9px 0 2px;overflow-x:auto;scrollbar-width:thin}
+.engine-mission .slot{flex:1 0 95px;min-height:125px;border:2px dashed #b4d5ed;background:#e8f5ffdb;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 4px;gap:5px;color:#1d405c;box-shadow:0 3px 0 #436f8752}
+.engine-mission .slot .sym svg{height:67px;width:100%;max-width:100px}
+.engine-mission .slot b{font-size:11px;line-height:1.2;text-align:center}
+.engine-mission .slot.done{background:#d5f5e7;border:2px solid #30b98a}
+.engine-mission .slot.done b{color:#116747}
+.engine-stand{display:flex;justify-content:space-around;height:17px;background:#d9a32d;border:3px solid #835e15;border-radius:5px;margin:5px 6% 0;box-shadow:0 9px 0 #3b4955}
+.engine-stand span{height:20px;width:12px;background:#e9c350;border:2px solid #85621c;transform:translateY(-16px)}
+.engine-belt-title{display:flex;justify-content:space-between;gap:12px;background:#26465d;color:white;border-radius:10px 10px 0 0;padding:9px 13px;font-weight:800;margin-top:13px;font-size:13px}
+.engine-belt-title span{font-weight:500;color:#cce5f2}
+.engine-mission .belt{border-radius:0 0 12px 12px;border:4px solid #627989;background:repeating-linear-gradient(90deg,#8a9ca9 0 22px,#bac6cd 22px 42px);height:142px}
+.engine-mission .belt-track{animation-duration:65s}
+.engine-mission .part{background:#f7fcff;border:3px solid #aacce1;border-radius:12px;min-width:142px;flex-basis:142px;height:115px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:800;text-align:center;color:#193c56;touch-action:none}
+.engine-mission .part span{height:73px;width:100%;display:flex;align-items:center;justify-content:center}
+.engine-mission .part span svg{height:70px;width:120px}
+.engine-mission .part.selected{border-color:#f3a72c;background:#fff0b9}
+@media(max-width:720px){.engine-board-label span,.engine-belt-title span{display:none}.engine-preview{min-height:100px}.engine-mission .slot{flex-basis:90px}.engine-mission h2{font-size:20px}.engine-bay{font-size:10px}}
+
+@keyframes beltMove {from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.engine-mission .belt-track{animation:beltMove 65s linear infinite;will-change:transform}
+.engine-mission .part{cursor:grab}
+</style><style>
+.balance-info{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;background:#e3f3ff;border-radius:12px;padding:12px;font-weight:850}.balance-layout{display:grid;grid-template-columns:minmax(250px,1.1fr) minmax(220px,1fr);gap:16px;margin:14px 0}.rotor-panel{background:#e9f6fd;border:3px solid #acd4e7;border-radius:20px;display:grid;place-items:center;min-height:310px}.rotor-panel svg{width:100%;max-width:410px;touch-action:manipulation}.blade-panel{background:#f5faff;border:2px solid #c8e2f1;border-radius:18px;padding:14px}.blade-tray{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.blade-item{padding:11px 6px;border:3px solid #7faed0;border-radius:12px;background:white;color:#254b6a;cursor:grab;font-size:14px;font-weight:800;touch-action:none}.blade-item.active{border-color:#e9a22b;background:#fff0b8}.blade-item:disabled{opacity:.35}.blade-panel button{margin:3px}.rotor-slot{cursor:pointer}.rotor-slot:focus{outline:none}.rotor-slot:hover .rotor-shape{stroke:#e3a32c;stroke-width:5}@media(max-width:660px){.balance-layout{grid-template-columns:1fr}.rotor-panel{min-height:240px}.blade-tray{grid-template-columns:repeat(4,minmax(0,1fr))}.blade-item{font-size:11px;padding:8px 2px}}
+.balance-mode{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.balance-mode button{flex:1;min-width:160px}.balance-meter{width:min(94%,400px);margin:0 auto 12px;text-align:center;font-weight:800}.meter-track{height:14px;background:#d6e0e8;border-radius:12px;overflow:hidden;margin:7px 0}.meter-track>div{height:100%;width:0%;background:#e99e36;transition:width .25s}.balance-meter small{font-weight:600;color:#49657c}.help-panel{margin-top:12px;background:#e8f5ff;border:1px solid #b9d9ee;padding:12px;border-radius:14px}.help-panel p{line-height:1.5;margin:9px 0}.help-panel button{margin:4px}.rotor-slot.selected .rotor-shape{stroke:#f0a520;stroke-width:6}.rotor-spin{transform-origin:180px 180px;animation:balSpin .75s linear infinite}.rotor-spin.shaky{animation:balWobble .32s linear infinite}@keyframes balSpin{to{transform:rotate(360deg)}}@keyframes balWobble{0%,100%{transform:rotate(-3deg) translateX(-5px)}50%{transform:rotate(3deg) translateX(5px)}}
+
+/* V13 legibility */
+.rotor-panel{background:#f2f9ff;border-color:#6eafcf}.rotor-panel svg{max-width:480px}.balance-info{font-size:17px}.balance-meter{font-size:17px}.blade-panel>b{font-size:18px}.help-panel{font-size:16px}.balance-layout{grid-template-columns:minmax(310px,1.2fr) minmax(260px,1fr)}@media(max-width:700px){.balance-layout{grid-template-columns:1fr}.rotor-panel svg{max-width:460px}}
+
+</style><style>
+/* v16: 2.5D airport presentation, based on supplied visual reference */
+#marshalPage{background:#d9edfc;border-color:#7aafce;max-width:100%;}
+#marshalPage .marsh-stage{height:clamp(470px,63vw,710px);min-height:0;border:4px solid #294e69;border-radius:18px;box-shadow:0 7px 0 #234d67}
+#marshalPage .airfield-scenery{display:none}
+#marshalPage .road{left:39%;width:22%;background:linear-gradient(90deg,#9aa6aa 0%,#b8c1c4 8%,#b3bdc1 50%,#b8c1c4 92%,#98a5a9 100%);border-left:3px solid #dfe6e5;border-right:3px solid #dfe6e5;box-shadow:0 0 0 2px #8e9da0;clip-path:polygon(24% 0,76% 0,100% 100%,0 100%)}
+#marshalPage .road:after{border-left:4px solid #ffce35;left:50%;opacity:.95}
+#marshalPage .branch{height:25px;background:#aeb9bd;border-top:3px solid #dce3e2;border-bottom:3px solid #dce3e2;box-shadow:0 2px 4px #344b4a60}
+#marshalPage .branch:after{top:9px;border-top:3px solid #ffd039}
+#marshalPage .lane-sign{background:#141f2a;color:#ffd63d;border:3px solid #f7cb33;box-shadow:2px 3px 0 #172938;font-size:clamp(12px,1.8vw,19px);border-radius:6px;padding:5px 10px}
+#marshalPage .lane-sign.target{background:#ffe14d;color:#182a3a;outline:3px solid #ff8c22}
+#marshalPage .airplane{width:clamp(65px,10vw,112px);height:clamp(80px,12vw,140px);filter:drop-shadow(6px 10px 3px #263e5277)}
+#marshalPage .marshaler{bottom:1%;filter:drop-shadow(2px 4px 2px #253a4b)}
+#marshalPage .marshaler svg{width:clamp(70px,10vw,112px);height:clamp(85px,12vw,130px)}
+#marshalPage .controls button{border-radius:15px;min-height:68px;font-size:clamp(13px,2vw,21px);border:2px solid #b5d5ed;box-shadow:0 5px 0 #2c5068}
+#marshalPage #left,#marshalPage #forward,#marshalPage #right{background:#087cdb}
+#marshalPage #slow{background:#f4a024}
+#marshalPage #stop{background:#df3e49}
+#marshalPage #normal{background:#0ba36b}
+#marshalPage .toolbar .pill,#marshalPage .toolbar .score{background:#203e57;color:white;border-radius:9px;padding:9px 12px}
+#marshalPage .message{background:#f9f1cb;color:#233b51}
+#marshalPage .big{font-size:clamp(17px,2.5vw,26px)}
+@media(max-width:600px){#marshalPage .marsh-stage{height:clamp(460px,110vw,590px)}#marshalPage .controls button{min-height:60px;font-size:12px;padding:6px 3px}}
+
+</style></head><body><main><header><h1>✈️ Aero Buddies</h1><div class="pill" id="modeLabel">Prototype v22.2</div></header><button type="button" class="grey" id="fullscreenBtn" title="Full screen">⛶ Full screen</button><div id="menu" class="panel"><h2>Welcome, Technician! 👩‍🔧</h2><p>Choose your first mission. Complete tasks, earn points and stay safe!</p><div class="menu"><div class="choice" id="engineChoice"><span class="emoji">🛠️⚙️</span>Engine Assembly Rush<br><small>Conveyor belt challenge</small></div><div class="choice" id="balanceChoice"><span class="emoji">🌀⚖️</span>Fan Blade Balancing<br><small>Arrange blades to balance the rotor</small></div><div class="choice" id="marshalChoice"><span class="emoji">🛬👷</span>Aircraft Marshalling<br><small>Guide the aircraft safely</small></div><div class="choice choice-new" id="fuelChoice" role="button"><span class="new-badge">NEW</span><span class="emoji">⛽🚚</span>Aircraft Refuelling<br><small>Bond, ground and fill — don't spill!</small></div></div><div class="leaderboards" id="leaderboards"></div><p class="hint">More missions (borescope, walkaround inspection and wheel change) are planned for later prototypes.</p></div>
+<section id="enginePage" class="panel engine-mission hidden">
+ <div class="toolbar"><button class="grey back">← Main menu</button><span class="score" id="engineScore">Score: 0</span><span class="pill" id="engineTime">Time: 60s</span></div>
+ <h2>🛠️ Engine Assembly Rush <span class="engine-bay">HANGAR · BAY 02</span></h2>
+ <p class="engine-instruction">Build the selected aircraft engine! Tap a component on the moving conveyor, then tap its matching assembly position. Drag-and-drop also works.</p>
+ <div class="engine-type" id="engineType">Engine 1</div>
+ <div class="engine-hangar"><div class="engine-worktop"><div class="engine-board-label">ENGINE ASSEMBLY STAND <span>FRONT / INLET → CORE → EXHAUST</span></div><div class="engine-preview" id="enginePreview"></div><div class="engine" id="slots"></div><div class="engine-stand"><span></span><span></span><span></span></div></div></div>
+ <div class="engine-belt-title">⚙️ MOVING PARTS CONVEYOR <span>Tap a part to select • Tap a bay to install</span></div><div class="belt" id="belt"></div>
+ <p class="message" id="engineMsg">Select a component from the conveyor belt.</p><div class="toolbar"><button class="alt" id="engineStart">▶ Start / Restart</button><span class="hint">Correct +100 points / +3 seconds · Incorrect −40 points / −2 seconds</span></div>
+ </section>
+ <section id="balancePage" class="panel hidden"><div class="toolbar"><button class="grey back">← Main menu</button><span class="score" id="balanceScore">Score: 0</span><span class="pill" id="balanceTime">Time: 60s</span></div><h2>🌀 Fan Blade Balancing</h2><p>Swap numbered fan blades to reduce the resultant imbalance. The coloured dot shows the imbalance direction: aim to bring it towards the centre. This is a simplified learning model.</p><div class="balance-mode"><button id="balPractice" class="good">📘 Practice · No timer</button><button id="balChallenge" class="grey">🏆 Challenge · 90s</button></div><div class="balance-info"><span id="balanceRound">Rotor 1</span><span id="balanceReadout">Resultant: —</span><span id="balanceLimit">Target ≤ 1.5 units</span></div><div class="balance-layout"><div class="rotor-panel"><svg id="balanceRotor" viewBox="0 0 360 360" role="img" aria-label="Eight-slot fan rotor with live imbalance indicator"></svg><div class="balance-meter"><span id="balMeterLabel">Imbalance monitor</span><div class="meter-track"><div id="balMeterFill"></div></div><small id="balAdvice">Tap two blades to swap them.</small></div></div><div class="blade-panel"><b>Tap two rotor blades to swap their positions</b><p class="hint">Selected blade is highlighted. Watch the balance dot move after each swap.</p><div id="bladeTray" class="blade-tray"></div><div class="help-panel"><b>👩‍🔧 Senior Technician</b><p id="balHintText">Start with opposite blades. Matching moment values across the centre can help cancel imbalance.</p><button id="balHint" class="alt">💡 Get hint</button><button id="balDemo" class="grey">▶ Show balancing principle</button></div><button id="balanceCheck" class="good">✓ Check balance</button><button id="balanceReset" class="grey">↺ Reset rotor</button></div></div><p class="message" id="balanceMsg">Select Start to begin balancing.</p><div class="toolbar"><button id="balanceStart" class="alt">▶ Start / Restart</button><span class="hint">Practice: unlimited time &amp; hints · Challenge: +300 / +3s on success, −2s on failed check, −25 per hint</span></div></section>
+<section id="marshalPage" class="panel hidden"><div class="toolbar"><button class="grey back">← Main menu</button><span class="score" id="marshalScore">Score: 0</span><span class="pill" id="marshalTime">Time: 60s</span><span class="pill" id="marshalLives">Mistakes: 0</span></div><h2>🛬 Aircraft Marshalling</h2><p class="big" id="missionText">Destination: —</p><div class="marsh-stage" id="marshStage"><div class="airfield-scenery" aria-hidden="true"><div class="grass-strip grass-one"></div><div class="grass-strip grass-two"></div><div class="terminal-building"><div class="terminal-roof">TERMINAL</div><div class="terminal-windows">▦ ▦ ▦ ▦</div></div><div class="hangar">HANGAR</div><div class="windsock">🚩</div><div class="service-cart">🚚</div><div class="cones">▲ ▲ ▲</div><div class="tree tree-a">🌳</div><div class="tree tree-b">🌳</div><div class="helipad">H</div></div><svg class="world" viewBox="0 0 1000 800" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="apron" x2="0" y2="1"><stop stop-color="#9aaab4"/><stop offset="1" stop-color="#c5c8c4"/></linearGradient><linearGradient id="grass" x2="0" y2="1"><stop stop-color="#7fc17b"/><stop offset="1" stop-color="#a3d485"/></linearGradient><pattern id="slabs" width="75" height="55" patternUnits="userSpaceOnUse"><path d="M75 0H0V55" fill="none" stroke="#738998" stroke-opacity=".22" stroke-width="2"/></pattern></defs><rect width="1000" height="800" fill="url(#grass)"/><path d="M0 0H1000V800H0Z" fill="url(#apron)"/><rect width="1000" height="800" fill="url(#slabs)"/><path d="M0 0H270V160H0Z" fill="#385d73" stroke="#e5f2f7" stroke-width="7"/><path d="M0 0H270V75H0Z" fill="#93c7d7"/><path d="M0 88H270M0 110H270M0 135H270" stroke="#bfdce4" stroke-width="4"/><rect x="28" y="170" width="140" height="55" rx="5" fill="#d7e6e8" stroke="#536e7e" stroke-width="7"/><rect x="172" y="182" width="88" height="36" fill="#7894a4" stroke="#536e7e" stroke-width="6"/><text x="45" y="58" fill="#173d55" font-size="32" font-weight="900">TERMINAL</text><rect x="760" y="30" width="190" height="78" rx="8" fill="#5d8094" stroke="#dae8e9" stroke-width="7"/><path d="M785 50h135m-135 20h135" stroke="#b5e3ed" stroke-width="12"/><text x="795" y="100" font-size="20" fill="white" font-weight="bold">HANGAR</text><path d="M390 -20H610V820H390Z" fill="#777f87" stroke="#d8e0e3" stroke-width="8"/><path d="M500 -10V810" stroke="#ffd03e" stroke-width="6" stroke-dasharray="35 12"/><path d="M500 164 H1000 V204 H500Z" fill="#777f87" stroke="#e3e7e5" stroke-width="4"/><path d="M500 184H1000" stroke="#ffd03e" stroke-width="5" stroke-dasharray="24 12"/><path d="M500 140 Q500 184 555 184" fill="none" stroke="#ffd03e" stroke-width="5"/><path d="M0 276 H500 V316 H0Z" fill="#777f87" stroke="#e3e7e5" stroke-width="4"/><path d="M0 296H500" stroke="#ffd03e" stroke-width="5" stroke-dasharray="24 12"/><path d="M500 252 Q500 296 445 296" fill="none" stroke="#ffd03e" stroke-width="5"/><path d="M500 388 H1000 V428 H500Z" fill="#777f87" stroke="#e3e7e5" stroke-width="4"/><path d="M500 408H1000" stroke="#ffd03e" stroke-width="5" stroke-dasharray="24 12"/><path d="M500 364 Q500 408 555 408" fill="none" stroke="#ffd03e" stroke-width="5"/><path d="M0 524 H500 V564 H0Z" fill="#777f87" stroke="#e3e7e5" stroke-width="4"/><path d="M0 544H500" stroke="#ffd03e" stroke-width="5" stroke-dasharray="24 12"/><path d="M500 500 Q500 544 445 544" fill="none" stroke="#ffd03e" stroke-width="5"/><path d="M500 524 H1000 V564 H500Z" fill="#777f87" stroke="#e3e7e5" stroke-width="4"/><path d="M500 544H1000" stroke="#ffd03e" stroke-width="5" stroke-dasharray="24 12"/><path d="M500 500 Q500 544 555 544" fill="none" stroke="#ffd03e" stroke-width="5"/><path d="M500 734 Q505 758 560 758H1000" fill="none" stroke="#777f87" stroke-width="39"/><path d="M500 734 Q505 758 560 758H1000" fill="none" stroke="#ffd03e" stroke-width="5" stroke-dasharray="18 10"/><rect x="55" y="285" width="70" height="40" rx="5" fill="#90b8c8" stroke="#324e62" stroke-width="5"/><rect x="65" y="293" width="50" height="20" fill="#d4edf5"/><rect x="150" y="560" width="70" height="40" rx="5" fill="#90b8c8" stroke="#324e62" stroke-width="5"/><rect x="160" y="568" width="50" height="20" fill="#d4edf5"/><rect x="830" y="150" width="70" height="40" rx="5" fill="#90b8c8" stroke="#324e62" stroke-width="5"/><rect x="840" y="158" width="50" height="20" fill="#d4edf5"/><rect x="820" y="615" width="70" height="40" rx="5" fill="#90b8c8" stroke="#324e62" stroke-width="5"/><rect x="830" y="623" width="50" height="20" fill="#d4edf5"/><path d="M285 180l-10 25h20z" fill="#ef8d3a" stroke="white" stroke-width="3"/><path d="M720 270l-10 25h20z" fill="#ef8d3a" stroke="white" stroke-width="3"/><path d="M285 500l-10 25h20z" fill="#ef8d3a" stroke="white" stroke-width="3"/><path d="M725 560l-10 25h20z" fill="#ef8d3a" stroke="white" stroke-width="3"/><path d="M280 700l-10 25h20z" fill="#ef8d3a" stroke="white" stroke-width="3"/></svg><div class="road"></div><div id="branches"></div><div id="lanes"></div><div class="airplane" id="aircraft"><svg viewBox="0 0 120 150" aria-label="Aircraft overhead"><path d="M60 5Q49 16 48 52L3 99L4 111L47 95L49 129L32 138V145L60 140L88 145V138L71 129L73 95L116 111L117 99L72 52Q71 16 60 5Z" fill="#f7fcff" stroke="#274e6b" stroke-width="3"/><path d="M51 24Q60 14 69 24L69 45H51Z" fill="#327ba5"/><path d="M48 65L9 103L48 90M72 65L111 103L72 90" fill="#d7e8f1" stroke="#7999b1" stroke-width="2"/><path d="M60 46V135" stroke="#8eafc4" stroke-width="2"/><ellipse cx="37" cy="96" rx="7" ry="13" fill="#344e60"/><ellipse cx="83" cy="96" rx="7" ry="13" fill="#344e60"/><circle cx="60" cy="5" r="4" fill="#ffb52b"/></svg></div><div class="marshaler" id="marshaller"><div id="pose"></div><div class="signal" id="signalLabel">Ready</div></div><div class="hazard hidden" id="bird">🐦 🐦 🐦</div><div class="bird-warning hidden" id="birdWarning">⚠️ BIRD ACTIVITY AHEAD!</div></div><p class="message" id="marshalMsg">Press Start. Turn into the correct taxi path. Use the orange NOSE dot to time each turn. Keep scoring!</p><div class="controls"><button id="left">↶ Left</button><button id="forward">↑ Forward</button><button id="right">↷ Right</button><button class="alt" id="slow">🐢 Slow Down</button><button class="red" id="stop">✋ Stop</button><button class="good" id="normal">▶ Normal Speed</button></div><div class="toolbar" style="margin-top:10px"><button class="alt" id="marshalStart">▶ Start / Restart</button><span class="hint">60 seconds + 3s per correct aircraft · mistakes cost points · Keyboard: ← ↑ → · S slow · F normal · Space stop</span></div><p class="hint">Training prototype: simplified movement and gestures, not a substitute for approved aircraft marshalling procedures.</p></section><section id="fuelPage" class="panel fuel-mission hidden"><div class="toolbar"><button class="grey back">← Main menu</button><span class="score" id="fuelScore">Score: 0</span><span class="pill" id="fuelAircraft">Aircraft: 1 / 3</span><span class="pill" id="fuelSpills">Spills: 0</span></div>
+<h2>⛽ Aircraft Refuelling</h2>
+<p class="fuel-intro">Make the aircraft safe, then signal the bowser driver to fill it to the exact amount — without spilling a drop.</p>
+<div class="fuel-stage" id="fuelStage"><svg viewBox="0 0 1200 520" role="img" aria-label="Aircraft and fuel bowser on the apron"></svg><div class="fuel-banner hidden" id="fuelBanner"></div><div class="fuel-driver hidden" id="fuelDriver"></div></div>
+<div class="fuel-side">
+ <div class="fuel-steps-box"><b id="fuelStepsTitle">📋 Procedure</b><ol id="fuelSteps"></ol></div>
+ <div class="fuel-gauge-box">
+  <div class="fuel-gauge" aria-hidden="true"><div id="fuelLimitZone"></div><div id="fuelFill"></div><div id="fuelTargetLine"></div></div>
+  <div class="fuel-readout"><div class="fuel-order" id="fuelOrder">—</div><div class="row"><span>On board</span><b id="fuelNow">—</b></div><div class="row"><span>Flow</span><b><span id="fuelRate">0</span> kg/s</b></div><div class="fuel-left" id="fuelLeft"></div><div class="fuel-limit" id="fuelLimitTxt"></div><div class="row"><span>Signal</span><b id="fuelSignalNow">✋ STOP</b></div></div>
+ </div>
+ <div class="fuel-signals"><button id="sigStart" type="button">▶ Start</button><button id="sigSlow" type="button">🐢 Slow</button><button id="sigFull" type="button">⏩ Full speed</button><button id="sigStop" type="button">✋ Stop</button></div>
+ <button id="sigDone" class="good" type="button">✓ Complete refuel</button>
+</div>
+<p class="message" id="fuelMsg">Press Start to begin your refuelling shift.</p>
+<div class="toolbar"><button class="alt" id="fuelStart" type="button">▶ Start / Restart</button><button class="grey" id="fuelHint" type="button">💡 Hint −50</button><span class="hint">Keys: Enter start · S slow · F full · Space stop</span></div>
+</section><div id="scoreEntry" class="score-entry hidden" role="dialog" aria-modal="true" aria-label="Save score"><div class="score-entry-card"><h2>🏆 Save your score</h2><p id="scoreEntryInfo"></p><div class="debrief" id="scoreDebrief"></div><label for="playerName">Nickname (up to 18 characters)</label><input id="playerName" maxlength="18" autocomplete="off" placeholder="Technician"/><div class="entry-actions"><button id="saveScore">Save score</button><button id="skipScore" class="grey">Skip</button></div></div></div><div class="footer">Aero Buddies · WSDip aviation training game prototype · Desktop & mobile</div></main>
+<script>
+const $=id=>document.getElementById(id);const pages=['menu','enginePage','marshalPage','balancePage','fuelPage'];let engTimer=null,marRAF=null,engRunning=false,marRunning=false;let balTimer=null,balRunning=false;function show(id){try{window.fuelStop&&window.fuelStop()}catch{}clearInterval(engTimer);clearInterval(balTimer);cancelAnimationFrame(marRAF);engRunning=false;marRunning=false;balRunning=false;pages.forEach(p=>$(p).classList.toggle('hidden',p!==id));}document.querySelectorAll('.back').forEach(b=>b.onclick=()=>show('menu'));$('engineChoice').onclick=()=>openMission('engine');$('balanceChoice').onclick=()=>openMission('balance');$('marshalChoice').onclick=()=>openMission('marshal');
+function partSvg(type,grey=false){
+ const stroke=grey?'#8197a5':'#24445a';
+ const metal=grey?'#aab8c2':type.startsWith('Compressor')?'#2987c6':type.startsWith('Turbine')?'#d87943':'#839aa9';
+ const pale=grey?'#dce5eb':type.startsWith('Compressor')?'#a8dcf6':type.startsWith('Turbine')?'#ffd0a4':'#e6f3fa';
+ let art='';
+ if(type==='Fan'){
+ art='<ellipse cx="52" cy="38" rx="38" ry="34" fill="'+pale+'" stroke="'+stroke+'" stroke-width="3"/>'+
+ Array.from({length:12},(_,i)=>'<path d="M52 38 Q28 12 49 6 Q72 19 52 38" transform="rotate('+(i*30)+' 52 38)" fill="'+metal+'" stroke="'+stroke+'" stroke-width="1.2"/>').join('')+'<circle cx="52" cy="38" r="8" fill="'+stroke+'"/><circle cx="52" cy="38" r="3" fill="#fff"/>';
+ }else if(type.startsWith('Compressor')){
+ const cm=type.match(/^Compressor(LP|IP|HP)?(\d)$/)||[];const spool=cm[1]||'',stage=Number(cm[2])||1;
+ // Real engines: LP stages have the longest blades, HP the shortest; later stages are shorter with more blades.
+ const baseH={LP:28,IP:22,HP:15,'':23}[spool],count={LP:3,IP:4,HP:5,'':4}[spool]+stage;
+ art=(spool?'<text x="96" y="74" text-anchor="end" font-size="11" font-weight="900" fill="'+stroke+'">'+spool+stage+'</text>':'')+'<path d="M8 32 L94 32 L94 44 L8 44Z" fill="'+pale+'" stroke="'+stroke+'" stroke-width="2"/>'+
+ Array.from({length:count},(_,i)=>{let x=16+i*(75/(count-1)),h=Math.max(8,baseH-(stage-1)*2-i);return '<path d="M'+x+' 32 l-6 -'+h+' l9 3 l6 '+(h-3)+' M'+x+' 44 l-6 '+h+' l9 -3 l6 -'+(h-3)+'" fill="'+metal+'" stroke="'+stroke+'" stroke-width="1.3"/>'}).join('')+'<path d="M9 36 H94" stroke="#fff" stroke-width="2"/>';
+ }else if(type==='Combustor'){
+ art='<path d="M8 22 L24 13 H78 L95 22 V54 L78 64 H24 L8 54Z" fill="'+metal+'" stroke="'+stroke+'" stroke-width="3"/><rect x="21" y="23" width="62" height="30" rx="12" fill="'+pale+'" stroke="'+stroke+'" stroke-width="2"/>'+
+ Array.from({length:5},(_,i)=>'<path d="M'+(28+i*12)+' 43 q-7 -9 2 -18 q8 11 -2 18" fill="'+(grey?'#abb9c4':'#ff983b')+'"/>').join('');
+ }else if(type.startsWith('Turbine')){
+ let n=Number(type.replace('Turbine',''))||1, count=n===1?2:n===2?5:3,h=n===1?30:n===2?18:24;
+ art='<path d="M9 32 H93 V44 H9Z" fill="'+pale+'" stroke="'+stroke+'" stroke-width="2"/>'+
+ Array.from({length:count},(_,i)=>{let x=18+i*(67/Math.max(1,count-1));return '<path d="M'+x+' 32 Q'+(x-15)+' '+(30-h)+' '+(x-3)+' '+(34-h)+' L'+(x+7)+' 32 M'+x+' 44 Q'+(x-15)+' '+(46+h)+' '+(x-3)+' '+(42+h)+' L'+(x+7)+' 44" fill="'+metal+'" stroke="'+stroke+'" stroke-width="2"/>'}).join('');
+ }else if(type==='Gearbox'){
+ // Enclosed reduction gearbox with clearly visible meshing gearwheels.
+ art='<rect x="8" y="11" width="88" height="54" rx="10" fill="'+pale+'" stroke="'+stroke+'" stroke-width="3"/>'+
+ '<path d="M2 38H13M91 38H102" stroke="'+stroke+'" stroke-width="7"/>'+
+ [ [36,36,17],[69,39,12] ].map(([cx,cy,r])=>'<g><circle cx="'+cx+'" cy="'+cy+'" r="'+(r+5)+'" fill="'+metal+'" stroke="'+stroke+'" stroke-width="2"/>'+
+ Array.from({length:8},(_,i)=>'<rect x="'+(cx-3)+'" y="'+(cy-r-9)+'" width="6" height="9" rx="1" fill="'+metal+'" stroke="'+stroke+'" stroke-width="1" transform="rotate('+(i*45)+' '+cx+' '+cy+')"/>').join('')+
+ '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r-4)+'" fill="'+pale+'" stroke="'+stroke+'" stroke-width="2"/><circle cx="'+cx+'" cy="'+cy+'" r="5" fill="'+stroke+'"/></g>').join('');
+ }else if(type==='Shaft'){
+ // Distinct splined output shaft, bearing support and flange.
+ art='<path d="M5 31 H97 V45 H5Z" fill="'+metal+'" stroke="'+stroke+'" stroke-width="3"/>'+
+ '<rect x="15" y="25" width="16" height="26" rx="3" fill="'+pale+'" stroke="'+stroke+'" stroke-width="3"/>'+
+ '<rect x="66" y="25" width="12" height="26" rx="3" fill="'+pale+'" stroke="'+stroke+'" stroke-width="3"/>'+
+ '<path d="M35 28H62M35 48H62" stroke="'+stroke+'" stroke-width="3"/>'+
+ Array.from({length:5},(_,i)=>'<path d="M'+(38+i*5)+' 29V47" stroke="'+stroke+'" stroke-width="1.5"/>').join('')+
+ '<ellipse cx="96" cy="38" rx="6" ry="14" fill="'+pale+'" stroke="'+stroke+'" stroke-width="3"/><circle cx="96" cy="38" r="4" fill="'+stroke+'"/>';
+ }else if(type==='Propeller'){
+ art='<circle cx="52" cy="38" r="23" fill="'+pale+'" stroke="'+stroke+'" stroke-width="2"/>'+
+ Array.from({length:4},(_,i)=>'<path d="M52 38 Q31 21 43 3 Q61 -2 59 23Z" transform="rotate('+(i*90)+' 52 38)" fill="'+metal+'" stroke="'+stroke+'" stroke-width="2"/>').join('')+
+ '<circle cx="52" cy="38" r="10" fill="'+stroke+'"/><circle cx="52" cy="38" r="4" fill="'+pale+'"/>';
+ }else if(type==='Nozzle'){art='<path d="M8 18 L40 28 H58 L94 8 V68 L58 48 H40 L8 58Z" fill="'+metal+'" stroke="'+stroke+'" stroke-width="3"/><path d="M38 30 L87 18 V58 L38 46Z" fill="'+pale+'"/>'}
+ else if(type==='Vanes'){art='<path d="M12 31 H91 V44 H12Z" fill="'+pale+'" stroke="'+stroke+'" stroke-width="2"/>'+Array.from({length:6},(_,i)=>'<path d="M'+(17+i*13)+' 13 l8 21 -8 24" stroke="'+stroke+'" stroke-width="4" fill="none"/>').join('')}
+ return '<svg viewBox="0 0 104 76" width="104" height="76" aria-hidden="true">'+art+'</svg>';
+}
+function drawEnginePreview(){
+ const colors=['#4b91b9','#3b9fca','#3988bc','#2679a7','#28739c','#e6a44a','#d7783f','#b9653d','#a6b9c7'];
+ const count=parts.length,w=1020,segment=920/count;
+ let segments='';
+ for(let i=0;i<count;i++){
+  const p=parts[i],x=50+i*segment,complete=eng.done.has(i),label=p.name.replace(' Stage ',' ');
+  let h=['Fan','Propeller'].includes(p.name)?112:p.name.includes('LPC')?75:p.name.includes('IPC')?68:(p.name.includes('HPC')||p.name.includes('Compressor'))?61:p.name==='Combustor'?76:p.name.includes('HPT')?65:(p.name.includes('LPT')||p.name.includes('Power Turbine'))?82:65;
+  let y=94-h/2;
+  segments+='<g opacity="'+(complete?'1':'.37')+'"><rect x="'+(x+2)+'" y="'+y+'" width="'+(segment-4)+'" height="'+h+'" rx="6" fill="'+(complete?colors[i%colors.length]:'#d3e4ee')+'" stroke="'+(complete?'#18394f':'#6e91a8')+'" stroke-width="3" stroke-dasharray="'+(complete?'0':'7 5')+'"/>';
+  if(complete){for(let b=0;b<(['Fan','Propeller'].includes(p.name)?8:p.name.includes('Combustor')?3:5);b++){let bx=x+10+b*(segment-20)/(['Fan','Propeller'].includes(p.name)?8:p.name.includes('Combustor')?3:5);segments+='<path d="M'+bx+' '+(y+7)+' q-12 18 1 32 l8 18" stroke="#f4fbff" stroke-width="3" fill="none" opacity=".8"/>'}}
+  segments+='</g><text x="'+(x+segment/2)+'" y="183" text-anchor="middle" font-size="'+(count>8?12:14)+'" font-weight="800" fill="#163e56">'+(i+1)+'</text>';
+ }
+ $('enginePreview').innerHTML='<svg viewBox="0 0 1020 205" role="img" aria-label="Engine cross-section assembly progress"><defs><linearGradient id="shaftGrad" x2="0" y2="1"><stop stop-color="#f4fcff"/><stop offset=".55" stop-color="#688fa5"/><stop offset="1" stop-color="#27465b"/></linearGradient></defs><path d="M22 94 H1002" stroke="#284f69" stroke-width="16"/><path d="M22 91 H1002" stroke="url(#shaftGrad)" stroke-width="10"/><path d="M22 94 L52 81 V107Z" fill="#8ca6b7" stroke="#24435b" stroke-width="3"/>'+segments+'<text x="510" y="202" font-size="13" fill="#315a75" text-anchor="middle">ENGINE CORE ASSEMBLY • ILLUSTRATIVE TRAINING MODEL</text></svg>';
+}
+let parts=[{name:'Fan',symbol:'Fan'},{name:'LPC Stage 1',symbol:'Compressor1'},{name:'LPC Stage 2',symbol:'Compressor2'},{name:'HPC Stage 1',symbol:'Compressor3'},{name:'HPC Stage 2',symbol:'Compressor4'},{name:'Combustor',symbol:'Combustor'},{name:'HPT',symbol:'Turbine1'},{name:'LPT',symbol:'Turbine2'}];const engineDesigns=[
+ {name:'Two-spool high-bypass turbofan',parts:['Fan','LPC Stage 1','LPC Stage 2','HPC Stage 1','HPC Stage 2','Combustor','HPT','LPT']},
+ {name:'Three-spool turbofan',parts:['Fan','IPC Stage 1','IPC Stage 2','HPC Stage 1','HPC Stage 2','HPC Stage 3','Combustor','HPT','IPT','LPT']},
+ {name:'Compact turbojet',parts:['Inlet Guide Vanes','LPC Stage 1','HPC Stage 1','HPC Stage 2','Combustor','HPT','LPT','Exhaust Nozzle']},
+ {name:'Low-bypass turbofan',parts:['Fan','LPC Stage 1','HPC Stage 1','HPC Stage 2','HPC Stage 3','Combustor','HPT','LPT','Exhaust Nozzle']},
+ {name:'Turboprop engine',parts:['Propeller','Reduction Gearbox','Inlet Guide Vanes','Compressor Stage 1','Compressor Stage 2','Combustor','Gas Generator Turbine','Power Turbine','Exhaust Nozzle']},
+ {name:'Turboshaft engine',parts:['Inlet Guide Vanes','Compressor Stage 1','Compressor Stage 2','Combustor','Gas Generator Turbine','Free Power Turbine','Output Shaft','Reduction Gearbox']}
+];
+function makeParts(names){return names.map(name=>({name,symbol:name==='Fan'?'Fan':name==='Propeller'?'Propeller':name==='Combustor'?'Combustor':name.includes('Turbine')||['HPT','IPT','LPT'].includes(name)?'Turbine'+(name==='LPT'||name==='Power Turbine'||name==='Free Power Turbine'?2:name==='IPT'?3:1):name==='Exhaust Nozzle'?'Nozzle':name==='Inlet Guide Vanes'?'Vanes':name==='Reduction Gearbox'?'Gearbox':name==='Output Shaft'?'Shaft':'Compressor'+(name.startsWith('LPC')?'LP':name.startsWith('IPC')?'IP':name.startsWith('HPC')?'HP':'')+(name.includes('Stage 3')?3:name.includes('Stage 2')?2:1)}));}
+const partFacts={'Fan':'The fan moves most of the air — in a high-bypass turbofan it makes most of the thrust.','Propeller':'The propeller converts engine shaft power into thrust.','Reduction Gearbox':'The reduction gearbox slows the fast turbine shaft down to a speed the propeller or rotor can use.','Inlet Guide Vanes':'Inlet guide vanes direct incoming air onto the first compressor stage at the right angle.','Combustor':'In the combustor, fuel burns with compressed air, adding the energy that drives the turbines.','HPT':'The high-pressure turbine sits right behind the combustor and drives the HP compressor.','IPT':'The intermediate-pressure turbine drives the IP compressor in a three-spool engine.','LPT':'The low-pressure turbine drives the fan (and LP compressor) through the innermost shaft.','Gas Generator Turbine':'The gas generator turbine drives the engine\'s own compressor.','Power Turbine':'The power turbine extracts energy to turn the propeller via the gearbox.','Free Power Turbine':'The free power turbine is not connected to the compressor — it drives the output shaft only.','Output Shaft':'The output shaft delivers power, e.g. to a helicopter\'s main rotor gearbox.','Exhaust Nozzle':'The exhaust nozzle accelerates the hot gas out of the engine.'};
+function partFact(name){if(partFacts[name])return partFacts[name];if(/^LPC/.test(name))return 'Low-pressure compressor stages have long blades and start squeezing the air.';if(/^IPC/.test(name))return 'Intermediate-pressure compressor stages keep raising pressure in a three-spool engine.';if(/^HPC/.test(name))return 'High-pressure compressor stages have short blades — the air is already dense here.';if(/^Compressor/.test(name))return 'Each compressor stage raises the air pressure a little more.';return ''}
+function countdownTick(o,r){if(o.lastTick!==undefined&&r<o.lastTick&&r<=10&&r>0)window.aeroSfx?.('tick',r);o.lastTick=r}
+let eng={time:60,score:0,selected:null,done:new Set(),beltIndex:0,engineCount:0,designIndex:-1};
+function nextEngine(){let n=Math.floor(Math.random()*engineDesigns.length);if(n===eng.designIndex)n=(n+1)%engineDesigns.length;eng.designIndex=n;parts=makeParts(engineDesigns[n].parts);eng.done=new Set();eng.selected=null;eng.engineCount++;$('engineType').textContent='Engine '+eng.engineCount+' — '+engineDesigns[n].name;drawSlots();drawBelt();}function drawSlots(){$('slots').innerHTML=parts.map((p,i)=>`<div class="slot ${eng.done.has(i)?'done':''}" data-slot="${i}"><span class="sym">${partSvg(p.symbol,!eng.done.has(i))}</span><b>${'Bay '+(i+1)}${eng.done.has(i)?'<small class="installed-name">'+p.name+'</small>':''}</b></div>`).join('');document.querySelectorAll('[data-slot]').forEach(el=>el.onclick=()=>place(+el.dataset.slot));try{drawEnginePreview()}catch(err){console.warn('Engine preview unavailable',err);$('enginePreview').textContent='Engine assembly progress';}}function drawBelt(){
+ const seq=Array.from({length:parts.length*2},(_,i)=>(i*7+Math.floor(i/parts.length))%parts.length);
+ // Two identical runs create a continuously travelling conveyor, not a flickering list.
+ $('belt').innerHTML=`<div class="belt-track">${[...seq,...seq].map((idx,i)=>`<div class="part" draggable="true" data-part="${idx}" data-key="${i}"><span>${partSvg(parts[idx].symbol)}</span>${parts[idx].name}</div>`).join('')}</div>`;
+ const track=$('belt').querySelector('.belt-track');if(track){track.style.animation='beltMove 65s linear infinite';}document.querySelectorAll('[data-part]').forEach(el=>{
+   el.addEventListener('click',()=>{if(!engRunning)return;eng.selected=+el.dataset.part;document.querySelectorAll('.part').forEach(x=>x.classList.toggle('selected',x.dataset.part===el.dataset.part));$('engineMsg').textContent=`Selected ${parts[eng.selected].name}. Tap its matching shadow or drag it there.`});
+   el.addEventListener('dragstart',e=>{if(!engRunning){e.preventDefault();return}eng.selected=+el.dataset.part;e.dataTransfer.setData('text/plain',String(eng.selected));e.dataTransfer.effectAllowed='move';});
+   el.addEventListener('pointerdown',e=>{if(!engRunning||e.pointerType==='mouse')return;dragStart(e,el)});
+ });
+}
+let dragGhost=null,dragPointer=null;
+function dragStart(e,el){
+ dragPointer=e.pointerId;eng.selected=+el.dataset.part;
+ dragGhost=el.cloneNode(true);dragGhost.classList.add('drag-ghost');document.body.appendChild(dragGhost);
+ moveGhost(e);el.setPointerCapture(e.pointerId);
+ const move=ev=>{if(ev.pointerId===dragPointer)moveGhost(ev)};
+ const up=ev=>{if(ev.pointerId!==dragPointer)return;el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);dragGhost?.remove();dragGhost=null;const target=document.elementFromPoint(ev.clientX,ev.clientY)?.closest('[data-slot]');if(target)place(+target.dataset.slot);};
+ el.addEventListener('pointermove',move);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+}
+function moveGhost(e){if(dragGhost){dragGhost.style.left=e.clientX+'px';dragGhost.style.top=e.clientY+'px'}}
+$('slots').addEventListener('dragover',e=>{if(e.target.closest('[data-slot]'))e.preventDefault()});
+$('slots').addEventListener('drop',e=>{const slot=e.target.closest('[data-slot]');if(!slot)return;e.preventDefault();eng.selected=Number(e.dataTransfer.getData('text/plain'));place(+slot.dataset.slot)});
+function place(i){if(!engRunning||eng.selected===null||eng.done.has(i))return;if(eng.selected===i){window.aeroSfx?.('win');eng.done.add(i);eng.score+=100;eng.time+=3;$('engineTime').textContent='Time: '+eng.time+'s';$('engineMsg').textContent=`✅ ${parts[i].name} installed (+3s). ${partFact(parts[i].name)}`;eng.selected=null;if(eng.done.size===parts.length){window.aeroSfx?.('fanfare');eng.score+=150; $('engineMsg').textContent='🎉 Engine completed! +150 bonus. Next engine arriving!';nextEngine();}}else{eng.score=Math.max(0,eng.score-40);window.aeroSfx?.('lose');eng.time=Math.max(0,eng.time-2);$('engineTime').textContent='Time: '+eng.time+'s';$('engineMsg').textContent='❌ Incorrect component. −40 points and −2 seconds!';if(eng.time<=0){endEngine('⏰ Time is up!');return}}drawSlots();document.querySelectorAll('.part').forEach(x=>x.classList.remove('selected'));$('engineScore').textContent='Score: '+eng.score;}function endEngine(msg){if(!engRunning)return;engRunning=false;clearInterval(engTimer);$('engineMsg').textContent=msg+' Final score: '+eng.score;showScoreEntry('engine',eng.score)}function startEngine(){clearInterval(engTimer);eng={time:60,score:0,selected:null,done:new Set(),beltIndex:0,engineCount:0,designIndex:-1};engRunning=true;nextEngine();$('engineScore').textContent='Score: 0';$('engineTime').textContent='Time: 60s';$('engineMsg').textContent='Drag a moving component to the matching shadow, or tap to select.';engTimer=setInterval(()=>{if(!engRunning)return;eng.time--;$('engineTime').textContent='Time: '+eng.time+'s';countdownTick(eng,eng.time);if(eng.time<=0)endEngine('⏰ Time is up! Engines completed: '+(eng.engineCount-1)+'.')},1000)}$('engineStart').onclick=startEngine;
+let mar={};
+// Branch centres in stage coordinates, ordered from the top to the bottom.
+const lanePositions={R3:.23,L2:.37,R2:.51,L1:.68,R1:.68};const turnRadius=.052;
+function buildLanes(){
+ let signs='',branches='';
+ for(const [lane,y] of Object.entries(lanePositions)){
+  const side=lane[0];branches+=`<div class="branch ${side==='L'?'left':'right'}" style="top:calc(${y*100}% - 12px)"></div>`;
+  signs+=`<div class="lane-sign ${side==='L'?'left':'right'}" style="top:calc(${y*100}% - 37px)" data-lane="${lane}"><span class="sign-arrow">${side==='L'?'←':'→'}</span> ${lane}</div>`;
+ }
+ signs+=`<div class="emergency-sign">⚠ EMERGENCY EXIT ↓</div>`;branches+=`<div class="emergency-route"></div>`;$('lanes').innerHTML=signs;$('branches').innerHTML=branches;
+}
+function poseSvg(cmd){
+ const arms={forward:[[25,40,17,24,10,52],[75,40,83,24,90,52]],left:[[25,40,5,8],[75,40,92,38]],right:[[25,40,8,38],[75,40,95,8]],slow:[[25,40,10,63],[75,40,90,63]],normal:[[25,40,17,24,10,52],[75,40,83,24,90,52]],stop:[[25,40,75,6],[75,40,25,6]]}[cmd]||[[25,40,13,12],[75,40,87,12]];
+ return `<svg viewBox="0 0 100 125" role="img" aria-label="Marshaller giving ${cmd} signal"><ellipse cx="50" cy="120" rx="29" ry="5" fill="#20384a" opacity=".3"/><path d="M35 83L31 114M65 83L69 114" stroke="#18374b" stroke-width="13" stroke-linecap="round"/><path d="M30 112h16m15 0h16" stroke="#1c2938" stroke-width="10" stroke-linecap="round"/><path d="M31 38Q50 31 69 38L72 84Q50 94 28 84Z" fill="#164d80" stroke="#102f4b" stroke-width="3"/><path d="M35 39L40 82H60L65 39" fill="#b7ed4a" stroke="#f3fa8a" stroke-width="3"/><path d="M39 62H61" stroke="#dcefa4" stroke-width="6"/><circle cx="50" cy="21" r="17" fill="#b98258" stroke="#694932" stroke-width="3"/><path d="M32 21Q34 -1 50 2Q66 0 68 21" fill="#382c2a"/><path d="M30 20Q50 -4 70 20" fill="none" stroke="#162b3a" stroke-width="8"/>${arms.map(([x,y,xx,yy,ex,ey])=>`<path d="M${x} ${y}${ex!==undefined?`L${ex} ${ey}`:''}L${xx} ${yy}" stroke="#174f7c" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M${xx} ${yy}L${xx+(xx<50?-3:3)} ${yy-16}" stroke="#f9a12c" stroke-width="7" stroke-linecap="round"/><path d="M${xx+(xx<50?-3:3)} ${yy-16}v-5" stroke="#fff1b5" stroke-width="4" stroke-linecap="round"/>`).join('')}</svg>`;
+}
+buildLanes();
+function marshalMessage(msg){$('marshalMsg').textContent=msg}
+function hud(){
+ $('marshalScore').textContent='Score: '+mar.score;
+ $('marshalTime').textContent='Time: '+Math.max(0,Math.ceil(mar.duration-mar.elapsed))+'s';
+ $('marshalLives').textContent='Mistakes: '+mar.mistakes;
+}
+function chooseDestination(){return ['L1','L2','R1','R2','R3'][Math.floor(Math.random()*5)]}
+function spawnAircraft(){
+ mar.dest=chooseDestination();mar.y=-.12;mar.x=.5;mar.speed=mar.flight===1?.11:.19;mar.stopped=false;
+ mar.turn=null;mar.emergency=null;mar.birdActive=false;mar.birdUsed=false;mar.waiting=false;mar.birdWarned=false;mar.birdFlying=false;mar.birdProgress=0;
+ mar.birdStopRewarded=false;mar.birdAt=.28+Math.random()*.19;mar.birdScheduled=Math.random()<.45;
+ $('bird').classList.add('hidden');$('birdWarning').classList.add('hidden');
+ $('missionText').textContent='🎯 Destination: '+mar.dest;
+ document.querySelectorAll('[data-lane]').forEach(el=>el.classList.toggle('target',el.dataset.lane===mar.dest));
+ $('pose').innerHTML=poseSvg('forward');$('signalLabel').textContent='FORWARD';
+ marshalMessage('Flight '+mar.flight+' approaching'+(mar.flight===1?' slowly — get a feel for the turns':'')+'. Guide it to '+mar.dest+'.');
+ drawPlane();
+}
+function drawPlane(){
+ const a=$('aircraft');a.style.left=(mar.x*100)+'%';a.style.top=(mar.y*100)+'%';
+ // Aircraft SVG nose points UP. Rotate 180 to approach DOWN; then turn toward branch.
+ let rotation=180;
+ if(mar.turn){rotation=180+(mar.turn.side==='L'?90:-90)*Math.min(1,mar.turn.progress/mar.turn.radius)}
+ if(mar.emergency){rotation=180-90*Math.min(1,mar.emergency.progress/.085)}
+ a.style.transform=`translate(-50%,-50%) rotate(${rotation}deg)`;
+}
+function removeOverlay(){const old=$('marshalResult');if(old)old.remove()}
+function finishMarshal(msg){
+ marRunning=false;cancelAnimationFrame(marRAF);hud();
+ marshalMessage(msg);
+ const el=document.createElement('div');el.id='marshalResult';el.className='result-overlay';
+ el.innerHTML=`<div><h3>🏁 Shift Complete!</h3><p>${msg}</p><p class="big">⭐ ${mar.score} points</p><p>Aircraft guided: ${mar.success} &nbsp; • &nbsp; Mistakes: ${mar.mistakes}</p><button id="playAgain">▶ Play Again</button></div>`;
+ $('marshStage').appendChild(el);$('playAgain').onclick=startMarshal;showScoreEntry('marshal',mar.score);
+}
+function mistake(msg, emergency=false){
+ mar.mistakes++;mar.score=Math.max(0,mar.score-100);window.aeroSfx?.('lose');hud();
+ if(emergency){
+  mar.stopped=false;mar.emergency={progress:0,startY:mar.y};
+  marshalMessage('⚠️ Missed all stands! Aircraft taking the emergency exit. −100 points.');
+ }else{
+  mar.waiting=true;mar.waitUntil=mar.elapsed+.55;
+  marshalMessage('❌ '+msg+' −100 points. Next aircraft approaching…');
+ }
+}
+function finishTurn(){
+ const lane=mar.turn.lane;const correct=lane===mar.dest;
+ mar.turn=null;
+ if(correct){window.aeroSfx?.('win');mar.score+=250;mar.success++;mar.duration+=3;hud();mar.waiting=true;mar.waitUntil=mar.elapsed+.40;marshalMessage('✅ Correct! Aircraft guided into '+lane+'. +250 points · ⏱️ +3 seconds!')} 
+ else mistake('Aircraft entered '+lane+' instead of '+mar.dest+'.');
+}
+function startMarshal(){
+ cancelAnimationFrame(marRAF);removeOverlay();
+ mar={elapsed:0,duration:60,last:performance.now(),score:0,mistakes:0,flight:1,success:0,waiting:false};
+ marRunning=true;spawnAircraft();hud();marRAF=requestAnimationFrame(frame);
+ if(window.innerWidth<=600){try{$('missionText').scrollIntoView({behavior:'smooth',block:'start'})}catch{}}
+}
+function frame(t){
+ if(!marRunning)return;
+ const dt=Math.min((t-mar.last)/1000,.055);mar.last=t;mar.elapsed+=dt;hud();countdownTick(mar,Math.ceil(mar.duration-mar.elapsed));
+ if(mar.elapsed>=mar.duration){finishMarshal('Time is up!');return}
+ if(mar.waiting){if(mar.elapsed>=mar.waitUntil){mar.waiting=false;mar.flight++;spawnAircraft()}}
+ else if(mar.emergency){
+  const e=mar.emergency;e.progress+=dt*mar.speed;
+  const radius=.085;
+  if(e.progress<radius){const a=e.progress/radius*Math.PI/2;mar.x=.5+radius*(1-Math.cos(a));mar.y=e.startY+radius*Math.sin(a)}
+  else {mar.x=.5+radius+(e.progress-radius);mar.y=e.startY+radius}
+  if(mar.x>1.06){mar.emergency=null;mar.waiting=true;mar.waitUntil=mar.elapsed+.4}
+ }else if(mar.turn){
+  const turn=mar.turn;turn.progress+=dt*mar.speed;
+  const side=turn.side==='L'?-1:1;
+  if(turn.progress<turn.radius){
+    const angle=(turn.progress/turn.radius)*Math.PI/2;
+    mar.x=.5+side*turn.radius*(1-Math.cos(angle));
+    mar.y=turn.startY+turn.radius*Math.sin(angle);
+  }else{
+    mar.x=.5+side*(turn.radius+(turn.progress-turn.radius));
+    mar.y=turn.laneY;
+  }
+  if(Math.abs(mar.x-.5)>=.16)finishTurn();
+ }else if(!mar.stopped){
+  mar.y+=mar.speed*dt;
+  if(mar.birdScheduled&&!mar.birdWarned&&mar.y>=mar.birdAt-.16){
+   mar.birdWarned=true;$('birdWarning').classList.remove('hidden');
+   marshalMessage('⚠️ Bird activity reported ahead. Watch the approach!');
+  }
+  if(mar.birdScheduled&&mar.birdWarned&&!mar.birdUsed&&mar.y>=mar.birdAt-.12){
+   mar.birdUsed=true;mar.birdActive=true;mar.birdFlying=true;mar.birdProgress=0;
+   $('bird').classList.remove('hidden');$('bird').style.top=((mar.birdAt+.065)*100)+'%';
+   marshalMessage('🐦 Birds crossing the taxiway! Signal STOP.');
+  }
+  if(mar.birdActive&&mar.y>=mar.birdAt+.065){$('bird').classList.add('hidden');$('birdWarning').classList.add('hidden');mistake('Bird hazard ignored.');}
+  if(mar.y>.84){mistake('Missed the last taxiway.',true);}
+ }
+ if(mar.birdFlying){mar.birdProgress+=dt*.55;$('bird').style.left=(-22+mar.birdProgress*145)+'%';if(mar.birdProgress>=1.05){mar.birdFlying=false;if(mar.stopped){mar.birdActive=false;mar.birdScheduled=false;$('bird').classList.add('hidden');$('birdWarning').classList.add('hidden');marshalMessage('✅ Birds have cleared. Signal FORWARD when safe.');}}}
+ drawPlane();marRAF=requestAnimationFrame(frame);
+}
+function command(cmd){
+ if(!marRunning||mar.waiting||mar.turn||mar.emergency)return;
+ $('pose').innerHTML=poseSvg(cmd);$('signalLabel').textContent=cmd.toUpperCase();
+ if(cmd==='stop'){
+  mar.stopped=true;
+  if(mar.birdActive&&!mar.birdStopRewarded){mar.birdStopRewarded=true;window.aeroSfx?.('win');mar.score+=75;hud();marshalMessage('✅ Aircraft stopped for birds! Wait until the birds fly clear. +75 points.');}
+  else if(mar.birdActive)marshalMessage('✋ Holding position. Wait until the birds fly clear.');
+  else marshalMessage('Aircraft stopped. Signal FORWARD to resume.');
+  return;
+ }
+ if(mar.birdActive){mistake('Continued movement while birds were crossing.');return}
+ if(cmd==='slow'){mar.speed=.085;mar.stopped=false;marshalMessage('Slow approach. Destination: '+mar.dest);return}
+ if(cmd==='normal'||cmd==='forward'){if(cmd==='normal')mar.speed=.19;mar.stopped=false;marshalMessage('Aircraft moving. Destination: '+mar.dest);return}
+ if(cmd==='left'||cmd==='right'){
+  // Any turn signal within a branch window makes the aircraft take that branch,
+  // even when it is the WRONG destination.
+  const side=cmd==='left'?'L':'R';
+  const nearest=Object.entries(lanePositions).filter(([lane])=>lane.startsWith(side)).map(([lane,y])=>({lane,y,d:Math.abs(mar.y-(y-.065))})).sort((a,b)=>a.d-b.d)[0];
+  if(nearest.d>.062){marshalMessage('⚠️ No '+side+' taxi branch is aligned. Wait for the correct junction.');return}
+  const lane=nearest.lane;mar.stopped=false;mar.turn={side,lane,laneY:nearest.y,startY:mar.y,radius:Math.max(.018,nearest.y-mar.y),progress:0};
+  marshalMessage('Aircraft turning into '+lane+'… '+(lane===mar.dest?'Correct route!':'Check the assigned destination!'));
+ }
+}
+['left','right','forward','slow','normal','stop'].forEach(id=>$(id).onclick=()=>command(id));
+$('marshalStart').onclick=startMarshal;
+document.addEventListener('keydown',e=>{
+ if($('marshalPage').classList.contains('hidden')||!marRunning)return;
+ if(e.target.closest&&e.target.closest('input,textarea,select'))return;
+ if(!$('scoreEntry').classList.contains('hidden'))return;
+ const k={'ArrowLeft':'left','ArrowRight':'right','ArrowUp':'forward','s':'slow','f':'normal',' ':'stop'}[e.key];
+ if(k){e.preventDefault();command(k)}
+});
+
+
+// Fan blade balancing: educational vector model, not an approved maintenance method.
+let bal={time:90,score:0,round:0,values:[],slots:[],selected:null,mode:'practice',hints:0,spinning:false};
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function balVector(slots=bal.slots){let x=0,y=0;slots.forEach((idx,i)=>{if(idx===null)return;const angle=(i*45-90)*Math.PI/180;x+=bal.values[idx]*Math.cos(angle);y+=bal.values[idx]*Math.sin(angle)});return {x,y,mag:Math.hypot(x,y)}}
+function balanceMoment(){return balVector().mag}
+function newRotor(){bal.round++;bal.selected=null;bal.hints=0;bal.spinning=false;let pairs=shuffle([8,10,12,14]);bal.values=shuffle(pairs.flatMap(x=>[x,x]));bal.slots=shuffle(Array.from({length:8},(_,i)=>i));$('balanceRound').textContent='Rotor '+bal.round;$('balHintText').textContent='Try matching blades with similar moment values across the centre. The bars under each value show how heavy each blade is.';$('balanceMsg').textContent='Tap one blade, then another to swap. Bring the imbalance dot towards the centre.';renderBalance()}
+function renderBalance(){let svg=$('balanceRotor'),vec=balVector(),res=vec.mag;
+ const BAL_MAX=20,BAL_TARGET=1.5,BAL_R=112,dialR=v=>BAL_R*Math.sqrt(Math.min(1,v/BAL_MAX)),greenR=dialR(BAL_TARGET);
+ let markup='<circle cx="180" cy="180" r="148" fill="#d6e9f4" stroke="#7299b0" stroke-width="5"/>';
+ markup+='<g id="balRotorGroup" class="'+(bal.spinning?(res<=1.5?'rotor-spin':'rotor-spin shaky'):'')+'"><circle cx="180" cy="180" r="138" fill="none" stroke="#9dbbcf" stroke-width="2"/>';
+ for(let i=0;i<8;i++){let angle=i*45-90,rad=angle*Math.PI/180,x=180+104*Math.cos(rad),y=180+104*Math.sin(rad),v=bal.slots[i],filled=v!==null;markup+=`<g class="rotor-slot ${bal.selected===i?'selected':''}" data-position="${i}" role="button" tabindex="0" aria-label="Rotor position ${i+1}, blade B${v+1}, moment ${bal.values[v]}"><g transform="translate(${x} ${y}) rotate(${angle+90})"><path class="rotor-shape" d="M -29 -34 Q -8 -40 27 -29 Q 19 -12 12 4 Q 8 19 6 26 L -7 26 Q -10 13 -16 1 Q -22 -17 -29 -34 Z" fill="${bal.selected===i?'#ffd166':({8:'#37b7ce',10:'#458cdb',12:'#7164c7',14:'#267c9c'}[bal.values[v]])}" stroke="${bal.selected===i?'#d07900':'#173b59'}" stroke-width="3.2"/><path d="M -25 -32 Q -8 -23 -5 -5 Q -2 12 -3 23" fill="none" stroke="#dcecf5" stroke-width="2.8" opacity=".9"/><path d="M 23 -28 Q 10 -11 7 7 L 5 22" fill="none" stroke="#57758b" stroke-width="2"/><path d="M -10 26 L 10 26 L 10 34 L -10 34 Z" fill="#647b91" stroke="#34566f" stroke-width="1.8"/><path d="M -12 28 H 12" stroke="#cbdce6" stroke-width="1.4"/></g><rect x="${x-26}" y="${y-27}" width="52" height="58" rx="9" fill="#ffffff" stroke="${bal.selected===i?'#d07900':'#193e60'}" stroke-width="2.2" opacity=".97"/><text x="${x}" y="${y-5}" text-anchor="middle" font-size="21" font-weight="950" fill="#102b45">B${v+1}</text><text x="${x}" y="${y+14}" text-anchor="middle" font-size="15" font-weight="900" fill="#173d60">${bal.values[v]} u</text>${[0,1,2,3].map(k=>`<rect x="${x-17+k*9}" y="${y+21}" width="7" height="6" rx="1.5" fill="${k<(bal.values[v]-6)/2?'#173d60':'none'}" stroke="#173d60" stroke-width="1.2"/>`).join('')}</g>`}
+ markup+='</g><circle cx="180" cy="180" r="'+greenR.toFixed(1)+'" fill="#bfeedb" fill-opacity=".55" stroke="#289a70" stroke-width="3" stroke-dasharray="5 4"/><circle cx="180" cy="180" r="7" fill="#f6fcff" stroke="#416c88" stroke-width="3"/>';
+ let dr=dialR(res),dotx=180+(res?vec.x/res:0)*dr,doty=180+(res?vec.y/res:0)*dr;
+ markup+=`<path d="M180 180 L${dotx} ${doty}" stroke="${res<=1.5?'#289a70':'#d58b25'}" stroke-width="4" stroke-dasharray="5 5"/><circle cx="${dotx}" cy="${doty}" r="10" fill="${res<=1.5?'#289a70':'#e9a137'}" stroke="white" stroke-width="3"/>${res<=1.5?`<path d="M${dotx-5} ${doty}l3.5 4 6.5-8" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`:''}`;
+ svg.innerHTML=markup;
+ svg.querySelectorAll('[data-position]').forEach(el=>{el.onclick=()=>selectRotor(+el.dataset.position);el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectRotor(+el.dataset.position)}}});
+ $('bladeTray').innerHTML='<div style="grid-column:1/-1;line-height:1.6">🟢 Green zone = within target (≤ 1.5 u)<br>🟠 Orange dot = imbalance direction &amp; size — get it inside the green zone<br>▮ Blade bars show moment weight: ▮ 8 u · ▮▮ 10 u · ▮▮▮ 12 u · ▮▮▮▮ 14 u.<br>💡 Opposite positions are four slots apart.</div>';
+ $('balanceReadout').textContent='Resultant: '+res.toFixed(2)+' units';$('balanceScore').textContent='Score: '+bal.score;$('balanceTime').textContent=bal.mode==='practice'?'Practice · ∞':'Time: '+bal.time+'s';$('balMeterLabel').textContent=res<=1.5?'✓ Within target':'Imbalance: '+res.toFixed(2)+' units';$('balMeterFill').style.width=Math.min(100,Math.sqrt(Math.min(1,res/20))*100)+'%';$('balMeterFill').style.background=res<=1.5?'#29a47d':res<=5?'#e6a32c':'#d35b50';$('balAdvice').textContent=res<=1.5?'Ready to check balance!':'Target ≤ 1.50 units · lower is better';$('balPractice').className=bal.mode==='practice'?'good':'grey';$('balChallenge').className=bal.mode==='challenge'?'good':'grey';}
+function swapRotor(a,b){if(!balRunning||bal.spinning||a===b)return;const before=balanceMoment();[bal.slots[a],bal.slots[b]]=[bal.slots[b],bal.slots[a]];bal.selected=null;const after=balanceMoment();$('balanceMsg').textContent=after<before-.01?'Great! Imbalance decreased from '+before.toFixed(2)+' to '+after.toFixed(2)+'.':after>before+.01?'Imbalance increased to '+after.toFixed(2)+'. Try a different pair.':'No change in resultant. Try another pair.';renderBalance()}
+function selectRotor(pos){if(!balRunning||bal.spinning)return;if(bal.selected===null){bal.selected=pos;$('balanceMsg').textContent='Now select a second blade to swap with B'+(bal.slots[pos]+1)+'.';renderBalance()}else if(bal.selected===pos){bal.selected=null;renderBalance()}else swapRotor(bal.selected,pos)}
+function bestSwap(){let best=null,mag=balanceMoment();for(let a=0;a<8;a++)for(let b=a+1;b<8;b++){let trial=bal.slots.slice();[trial[a],trial[b]]=[trial[b],trial[a]];let val=balVector(trial).mag;if(val<mag-.001){mag=val;best=[a,b]}}return best}
+function giveHint(){if(!balRunning||bal.spinning)return;bal.hints++;if(bal.mode==='challenge')bal.score=Math.max(0,bal.score-25);const move=bestSwap();if(bal.hints%3===1){$('balHintText').textContent='Look for high-moment blades (14 u) and low-moment blades (8 u). Try to spread their effects around the rotor.'}else if(bal.hints%3===2){$('balHintText').textContent='Compare opposite positions: 1↔5, 2↔6, 3↔7, 4↔8. Similar moments on opposite sides often cancel.'}else{$('balHintText').textContent=move?'Try swapping position '+(move[0]+1)+' with position '+(move[1]+1)+'. This should reduce the imbalance.':'No single swap improves this rotor. Check balance or try rearranging multiple blades.'}renderBalance()}
+function demonstrateBalance(){if(!balRunning||bal.spinning)return;const move=bestSwap();if(!move){$('balHintText').textContent='The rotor is already at a local minimum. Check the result or try a different arrangement.';return}const before=balanceMoment();swapRotor(...move);$('balHintText').textContent='Demonstration: swapping positions '+(move[0]+1)+' and '+(move[1]+1)+' changed the imbalance from '+before.toFixed(2)+' to '+balanceMoment().toFixed(2)+'.';if(bal.mode==='challenge')bal.score=Math.max(0,bal.score-25);renderBalance()}
+function checkBalance(){if(!balRunning||bal.spinning)return;const residual=balanceMoment(),pass=residual<=1.5;bal.spinning=true;renderBalance();$('balanceMsg').textContent=pass?'🎉 Smooth rotation! Rotor is within the target.':'⚠️ Vibration detected. Rearrange blades and try again.';window.aeroSfx?.(pass?'fanfare':'buzzer');setTimeout(()=>{if(!balRunning)return;bal.spinning=false;if(pass){if(bal.mode==='challenge'){bal.score+=300;bal.time+=3}newRotor();$('balanceMsg').textContent='🎉 Balanced! '+(bal.mode==='challenge'?'+300 points and +3 seconds. ':'')+'New rotor ready.'}else{if(bal.mode==='challenge'){bal.time=Math.max(0,bal.time-2);if(bal.time<=0){endBalance();return}}$('balanceMsg').textContent='Residual '+residual.toFixed(2)+' exceeds 1.50. Try swapping two blades.';renderBalance()}},1100)}
+function startBalance(mode=bal.mode){clearInterval(balTimer);balRunning=true;bal={time:90,score:0,round:0,values:[],slots:[],selected:null,mode,hints:0,spinning:false};newRotor();if(mode==='challenge')balTimer=setInterval(()=>{if(!balRunning)return;bal.time--;countdownTick(bal,bal.time);if(bal.time<=0){endBalance();return}renderBalance()},1000)}
+function endBalance(){if(!balRunning)return;balRunning=false;clearInterval(balTimer);$('balanceMsg').textContent='⏰ Time up! Final score: '+bal.score;renderBalance();if(bal.mode==='challenge')showScoreEntry('balance',bal.score)}
+$('balanceChoice').setAttribute('role','button');$('balanceStart').onclick=()=>startBalance();$('balanceCheck').onclick=checkBalance;$('balanceReset').onclick=()=>{if(!balRunning)return;bal.selected=null;bal.slots=shuffle(bal.slots);$('balanceMsg').textContent='Rotor arrangement shuffled. Try balancing again.';renderBalance()};$('balHint').onclick=giveHint;$('balDemo').onclick=demonstrateBalance;$('balPractice').onclick=()=>startBalance('practice');$('balChallenge').onclick=()=>startBalance('challenge');
+
+// Local-only top-ten leaderboards. Scores are never sent to a server.
+const BOARD_KEY='aero-buddies-scores-v9';let pendingScore=null;
+// Change this PIN before an event. Delete / Clear buttons only appear after it is entered.
+const ADMIN_PIN='2468';let boardAdmin=false;
+const BLOCKED_ANY=['fuck','cunt','asshole','bitch','whore','nigg','penis','porn','cibai','chibai','kanina','lanjiao','pukimak','nabei'];
+const BLOCKED_WORD=['fuk','fk','shit','dick','pussy','slut','sex','knn','ccb','lj','babi','sohai','diu','puki','bastard','ass'];
+function cleanName(raw){const name=String(raw||'').trim().replace(/\s+/g,' ').slice(0,18);const low=name.toLowerCase().replace(/0/g,'o').replace(/1/g,'i').replace(/@/g,'a');const flat=low.replace(/[^a-z]/g,'');const words=low.split(/[^a-z]+/);if(!name||BLOCKED_ANY.some(w=>flat.includes(w))||words.some(w=>BLOCKED_WORD.includes(w)))return 'Technician';return name}
+// v19.8: scores are grouped by event. Older v19.x scores are kept under "General".
+const STORE_KEY='aero-buddies-events-v1',GAME_LABEL={engine:'Engine Assembly',marshal:'Aircraft Marshalling',balance:'Fan Blade Balancing',fuel:'Aircraft Refuelling'};
+function normBoards(v){v=v&&typeof v==='object'?v:{};const f=a=>Array.isArray(a)?a.filter(r=>r&&typeof r.name==='string').map(r=>({name:String(r.name).slice(0,18),score:Math.max(0,Math.floor(Number(r.score)||0)),date:typeof r.date==='string'?r.date:''})):[];return {engine:f(v.engine),marshal:f(v.marshal),balance:f(v.balance),fuel:f(v.fuel)}}
+function loadStore(){let st=null;try{st=JSON.parse(localStorage.getItem(STORE_KEY)||'null')}catch{st=null}
+ if(!st||typeof st!=='object'||!st.events||typeof st.events!=='object'){st={current:'General',events:{}};try{const old=JSON.parse(localStorage.getItem(BOARD_KEY)||'null');if(old)st.events.General=normBoards(old)}catch{}}
+ if(typeof st.current!=='string'||!st.current)st.current='General';
+ for(const k of Object.keys(st.events))st.events[k]=normBoards(st.events[k]);
+ if(!st.events[st.current])st.events[st.current]=normBoards({});return st}
+function saveStore(st){try{localStorage.setItem(STORE_KEY,JSON.stringify(st));return true}catch{alert('Browser storage is unavailable. Scores cannot be saved on this device.');return false}}
+function getBoards(){const st=loadStore();return st.events[st.current]}
+function putBoards(boards){const st=loadStore();st.events[st.current]=normBoards(boards);saveStore(st);renderBoards()}
+function boardButton(text,fn,cls='clear-scores'){const b=document.createElement('button');b.type='button';b.className=cls;b.textContent=text;b.onclick=fn;return b}
+function exportCsv(names){const st=loadStore(),rows=[['Event','Game','Rank','Nickname','Score','Saved at']];
+ for(const n of names){const b=st.events[n];if(!b)continue;for(const m of ['engine','marshal','balance','fuel'])b[m].forEach((r,i)=>rows.push([n,GAME_LABEL[m],i+1,r.name,r.score,r.date?new Date(r.date).toLocaleString('en-SG'):'']))}
+ if(rows.length===1){alert('No scores to export yet.');return}
+ // Guard against spreadsheet formula injection in nicknames, and quote where needed.
+ const cell=v=>{v=String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+ const csv='﻿'+rows.map(r=>r.map(cell).join(',')).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+ a.download='aero-buddies-'+(names.length===1?names[0]:'all-events').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'').toLowerCase()+'-scores.csv';
+ document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function renderBoards(){const st=loadStore(),boards=st.events[st.current],root=$('leaderboards');root.replaceChildren();
+ const head=document.createElement('div');head.className='board-head';const ht=document.createElement('h3');ht.textContent='🏆 Leaderboards · '+st.current;head.append(ht);
+ if(boardAdmin){const tools=document.createElement('div');tools.className='board-tools';
+  const lab=document.createElement('label');lab.textContent='Event:';lab.htmlFor='eventSelect';
+  const sel=document.createElement('select');sel.id='eventSelect';Object.keys(st.events).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n+' ('+['engine','marshal','balance','fuel'].reduce((t,m)=>t+st.events[n][m].length,0)+')';o.selected=n===st.current;sel.append(o)});
+  sel.onchange=()=>{const s2=loadStore();s2.current=sel.value;saveStore(s2);renderBoards()};
+  const add=boardButton('＋ New event',()=>{const raw=prompt('Name for the new event, e.g. "Open House Jan 2027":');if(raw===null)return;const name=raw.trim().replace(/\s+/g,' ').slice(0,40);if(!name)return;const s2=loadStore();if(!s2.events[name])s2.events[name]=normBoards({});s2.current=name;saveStore(s2);renderBoards()});
+  const exp=boardButton('⬇ Export this event (CSV)',()=>exportCsv([loadStore().current]));
+  const expAll=boardButton('⬇ Export all events (CSV)',()=>exportCsv(Object.keys(loadStore().events)));
+  tools.append(lab,sel,add,exp,expAll);
+  if(Object.keys(st.events).length>1)tools.append(boardButton('🗑 Delete this event',()=>{const s2=loadStore();if(!confirm('Delete the event "'+s2.current+'" and ALL its scores on this device? Export it first if you need a record.'))return;delete s2.events[s2.current];s2.current=Object.keys(s2.events)[0];saveStore(s2);renderBoards()},'clear-scores danger'));
+  head.append(tools)}
+ root.append(head);for(const [mode,title] of [['engine','⚙️ Engine Assembly Top 10'],['marshal','🛬 Marshalling Top 10'],['balance','🌀 Balancing Top 10'],['fuel','⛽ Refuelling Top 10']]){const panel=document.createElement('section');panel.className='leaderboard';const h=document.createElement('h3');h.textContent=title;panel.append(h);const list=document.createElement('ol');boards[mode].slice(0,10).forEach((record,i)=>{const li=document.createElement('li'),row=document.createElement('div');row.className='record';const name=document.createElement('strong');name.textContent=record.name;const points=document.createElement('span');points.textContent=Number(record.score)+' pts';const del=document.createElement('button');del.className='delete-score';if(!boardAdmin)del.hidden=true;del.textContent='Delete';del.setAttribute('aria-label','Delete score for '+record.name);del.onclick=()=>{if(!confirm('Delete this leaderboard entry?'))return;const fresh=getBoards();fresh[mode].splice(i,1);putBoards(fresh)};row.append(name,points,del);li.append(row);list.append(li)});panel.append(list);if(!boards[mode].length){const empty=document.createElement('p');empty.className='hint';empty.textContent='No scores saved yet.';panel.append(empty)}const clear=document.createElement('button');clear.className='clear-scores';clear.textContent='Clear this leaderboard';clear.onclick=()=>{if(!confirm('Delete ALL saved scores for '+title+' on this device?'))return;const fresh=getBoards();fresh[mode]=[];putBoards(fresh)};if(!boardAdmin)clear.hidden=true;panel.append(clear);root.append(panel)}
+ const manage=document.createElement('button');manage.className='clear-scores manage-scores';manage.textContent=boardAdmin?'🔓 Done managing scores':'🔒 Manage scores';
+ manage.onclick=()=>{if(boardAdmin){boardAdmin=false;renderBoards();return}const pin=prompt('Staff PIN to manage leaderboards:');if(pin===ADMIN_PIN){boardAdmin=true;renderBoards()}else if(pin!==null)alert('Incorrect PIN.')};
+ root.append(manage)}
+function showScoreEntry(mode,score){pendingScore={mode,score:Math.max(0,Math.floor(score))};$('scoreEntryInfo').textContent=(GAME_LABEL[mode]||'Aero Buddies')+' — '+pendingScore.score+' points';$('scoreDebrief').innerHTML=debriefHtml(mode);$('playerName').value='';$('scoreEntry').classList.remove('hidden');$('playerName').focus()}
+// Optional: put the WSDip programme page or a sign-up link here to show it on every end screen.
+const WSDIP_LINK='';
+const debriefs={fuel:['⛽ What you just practised','Refuelling crews bond and ground the aircraft and bowser so static electricity cannot cause a spark, keep a fire extinguisher ready, and control the fuel flow carefully. Stopping instantly for hazards like lightning, and never overfilling, keeps the ramp safe.'],
+ engine:['🛠️ What you just practised','Aircraft engine technicians build and inspect engines in this same front-to-back order: fan or propeller, compressors, combustor, turbines, exhaust. Knowing what each section does is the first step to troubleshooting it.'],
+ marshal:['🛬 What you just practised','Ramp crews guide aircraft on the ground with standard hand signals, and stop everything when a hazard such as birds appears. Real marshallers are trained and certified on the full ICAO signal set.'],
+ balance:['🌀 What you just practised','Fan blades are weighed and given a "moment weight". Technicians arrange them so heavy blades sit opposite similar ones, cancelling vibration before the engine ever runs.']};
+function debriefHtml(mode){const [t,b]=debriefs[mode]||debriefs.engine;const esc=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));return '<b>'+t+'</b><p>'+b+'</p><p class="cta">✈️ Want to do this for real? Ask us about the ITE <strong>Work-Study Diploma</strong> in aerospace — learn on the job with an industry partner while you earn a diploma.'+(WSDIP_LINK?' <a href="'+esc(WSDIP_LINK)+'" target="_blank" rel="noopener">Find out more →</a>':'')+'</p>'}
+function closeScoreEntry(){$('scoreEntry').classList.add('hidden');pendingScore=null}
+$('saveScore').onclick=()=>{if(!pendingScore)return;const name=cleanName($('playerName').value);const boards=getBoards(),mode=pendingScore.mode;boards[mode].push({name,score:pendingScore.score,date:new Date().toISOString()});boards[mode].sort((a,b)=>b.score-a.score);boards[mode]=boards[mode].slice(0,50);putBoards(boards);closeScoreEntry()};$('skipScore').onclick=closeScoreEntry;$('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')$('saveScore').click()});renderBoards();
+
+window.addEventListener('error',function(e){console.error('Aero Buddies runtime error:',e.message);});
+</script>
+<style>
+.mission-launch{position:fixed;inset:0;background:rgba(12,33,52,.78);z-index:9990;display:flex;align-items:center;justify-content:center;padding:18px}
+.mission-launch.hidden{display:none}.mission-launch-card{background:#f5fbff;color:#17334c;border:4px solid #75bce1;border-radius:24px;box-shadow:0 20px 60px #0007;padding:28px;max-width:480px;width:100%;text-align:center}
+.mission-launch-card h2{font-size:clamp(23px,4vw,33px);margin:10px 0}.mission-launch-card p{line-height:1.55}
+.mission-launch-card button{font-size:18px;padding:15px 22px;margin:6px;min-height:52px;border-radius:12px;cursor:pointer}
+.mission-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.installed-name{display:block;font-size:clamp(9px,1.5vw,13px);line-height:1.2;margin-top:3px;overflow-wrap:anywhere;color:#17334c}.mission-end{background:#d34e61!important;color:white!important;font-weight:800!important;border:0!important}
+</style>
+<div class="mission-launch hidden" id="missionLaunch" role="dialog" aria-modal="true" aria-labelledby="missionLaunchTitle">
+ <div class="mission-launch-card"><div style="font-size:44px" id="missionLaunchIcon">✈️</div><h2 id="missionLaunchTitle">Ready?</h2><p id="missionLaunchDescription">Press Start when ready.</p>
+ <div class="mission-actions"><button class="good" id="missionGo">▶ Start Game</button><button class="grey" id="missionCancel">← Main Menu</button></div></div>
+</div>
+<div class="mission-launch hidden" id="endMissionDialog" role="dialog" aria-modal="true" aria-labelledby="endMissionTitle"><div class="mission-launch-card"><div style="font-size:42px">🏁</div><h2 id="endMissionTitle">End Game?</h2><p>End the current round and view your final score?</p><div class="mission-actions"><button class="mission-end" id="confirmEndMission">■ End Game</button><button class="grey" id="cancelEndMission">Continue Playing</button></div></div></div>
+<script>
+(function(){
+ const info={fuel:['⛽','Aircraft Refuelling','Refuel 3 aircraft. Connect the bonding and grounding cables in the right order, then signal the bowser driver: Start, Slow, Full speed, Stop. Overfill and the fuel spills! The first aircraft shows you the procedure.'],engine:['🛠️','Engine Assembly Rush','60-second challenge. Assemble engine components from the conveyor. The timer starts only after you press Start.'],marshal:['🛬','Aircraft Marshalling','60-second challenge. Guide each aircraft to its assigned taxiway. The aircraft will wait until you press Start.'],balance:['🌀','Fan Blade Balancing','Choose Practice (no timer) or Challenge (90 seconds) after pressing Start.']};
+ let active=null;
+ const launch=document.getElementById('missionLaunch');
+ function hideLaunch(){launch.classList.add('hidden')}
+ window.openMission=function(mode){active=mode;show(({engine:'enginePage',marshal:'marshalPage',balance:'balancePage',fuel:'fuelPage'})[mode]);const [icon,title,description]=info[mode];document.getElementById('missionLaunchIcon').textContent=icon;document.getElementById('missionLaunchTitle').textContent=title;document.getElementById('missionLaunchDescription').textContent=description;launch.classList.remove('hidden');};
+ document.getElementById('missionGo').onclick=function(){hideLaunch();if(active==='engine')startEngine();else if(active==='marshal')startMarshal();else if(active==='balance')startBalance('practice');else if(active==='fuel')startFuel()};
+ document.getElementById('missionCancel').onclick=function(){hideLaunch();show('menu')};
+ const endDialog=document.getElementById('endMissionDialog');
+ let pendingEnd=null;
+ function closeEnd(){endDialog.classList.add('hidden');pendingEnd=null;}
+ document.getElementById('cancelEndMission').onclick=closeEnd;
+ document.getElementById('confirmEndMission').onclick=function(){
+   const mode=pendingEnd;closeEnd();if(!mode)return;
+   if(mode==='engine'){
+     if(engRunning)endEngine('🏁 Game ended by player.');
+     else $('engineMsg').textContent='Game ended. Press Start / Restart to play again.';
+   } else if(mode==='marshal'){
+     if(marRunning)finishMarshal('Game ended by player.');
+     else marshalMessage('Game ended. Press Start / Restart to play again.');
+   } else if(mode==='fuel'){
+     if(window.fuelIsRunning&&fuelIsRunning())fuelEnd('🏁 Shift ended by player.');
+     else $('fuelMsg').textContent='Game ended. Press Start / Restart to play again.';
+   } else {
+     if(balRunning){balRunning=false;clearInterval(balTimer);bal.spinning=false;$('balanceMsg').textContent='🏁 Game ended by player. Final score: '+bal.score;renderBalance();if(bal.mode==='challenge')showScoreEntry('balance',bal.score)}
+     else $('balanceMsg').textContent='Game ended. Press Start / Restart to play again.';
+   }
+ };
+ for(const [page,mode] of [['enginePage','engine'],['marshalPage','marshal'],['balancePage','balance'],['fuelPage','fuel']]){
+   const toolbar=document.querySelector('#'+page+' .toolbar');
+   const btn=document.createElement('button');btn.className='mission-end';btn.textContent='■ End Game';btn.type='button';
+   toolbar.insertBefore(btn,toolbar.children[1]||null);
+   btn.onclick=function(){pendingEnd=mode;document.getElementById('endMissionTitle').textContent='End '+info[mode][1]+'?';endDialog.classList.remove('hidden')};
+ }
+ // Opening a mission does not start its clock; the launch screen is mandatory.
+})();
+</script>
+<style>
+.music-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:8px 0 12px;padding:9px 12px;background:#e5f3fa;border:1px solid #afd6e9;border-radius:12px;color:#173d55;font-size:13px}
+.music-controls button{padding:8px 12px;font-size:13px;min-height:38px;border-radius:9px}
+.music-controls input[type=range]{width:110px;accent-color:#1688c7;cursor:pointer}
+.music-controls .music-state{font-size:12px;opacity:.8}
+</style><script>
+/* v20: upbeat synthesized soundtrack — 3 styles + Auto, reacts to the game. Web Audio only: no audio files, works offline. */
+(function(){
+ const root=document.querySelector('main');if(!root)return;
+ const controls=document.createElement('div');controls.className='music-controls';
+ controls.innerHTML='<button type="button" id="musicToggle" class="grey" aria-pressed="false">♫ Music: Off</button>'+
+  '<select id="musicStyle" aria-label="Music style"><option value="auto">🎚 Auto</option><option value="groove">🎷 Hangar Groove</option><option value="rush">🕹 Runway Rush</option><option value="calm">🌙 Calm</option></select>'+
+  '<label for="musicVolume">Volume</label><input type="range" id="musicVolume" min="0" max="100" value="50" aria-label="Background music volume">'+
+  '<span class="music-state" id="musicState">Tap to play</span>';
+ root.querySelector('header').insertAdjacentElement('afterend',controls);
+ const button=document.getElementById('musicToggle'),styleSel=document.getElementById('musicStyle'),volume=document.getElementById('musicVolume'),status=document.getElementById('musicState');
+ try{const saved=localStorage.getItem('aero-music-style');if(saved&&[...styleSel.options].some(o=>o.value===saved))styleSel.value=saved}catch{}
+ const AudioCtx=window.AudioContext||window.webkitAudioContext;
+ const mtof=m=>440*Math.pow(2,(m-69)/12),_=0;
+
+ // ---------- songs: 8 bars, 16 steps per bar. Bars 1-4 = melody, bars 5-8 = arpeggio variation ----------
+ const TRACKS={
+  groove:{name:'Hangar Groove',bpm:116,swing:.18,
+   pad:[[57,60,64],[57,60,65],[55,60,64],[55,59,62]],padLevel:.035,           // Am  F  C  G
+   bassRoots:[45,41,48,43],bassPat:[1,0,0,1,0,0,2,0, 1,0,1,0,0,0,2,0],bassWave:'sawtooth',bassLen:1.5,
+   kick:[1,0,0,0,1,0,0,0,1,0,0,1,1,0,0,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,.35],fill:false,
+   hat:[1,0,2,0,1,1,2,0,1,0,2,0,1,1,2,1],
+   lead:[[76,_,_,74,_,72,_,69, _,72,_,74,_,76,_,_],[77,_,_,76,_,72,_,69, _,72,_,74,_,72,_,_],
+         [76,_,_,79,_,76,_,72, _,74,_,76,_,79,_,_],[81,_,79,_,76,_,74,_, 71,_,74,_,79,_,_,_]],
+   leadWave:'square',leadLevel:.075,leadLen:1.6,arp:true,arpEvery:2,arpWave:'triangle'},
+  rush:{name:'Runway Rush',bpm:140,swing:0,
+   pad:[[64,67,71],[64,67,72],[62,67,71],[62,66,69]],padLevel:.03,            // Em  C  G  D
+   bassRoots:[40,36,43,38],bassPat:[1,0,2,0,1,0,2,0,1,0,2,0,1,0,2,1],bassWave:'sawtooth',bassLen:1.4,
+   kick:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0],snare:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],fill:true,
+   hat:[1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1],
+   lead:[[76,_,79,_,83,_,79,_, 81,_,79,_,76,_,74,_],[72,_,76,_,79,_,76,_, 81,_,79,_,76,_,_,_],
+         [79,_,83,_,86,_,83,_, 81,_,79,_,74,_,79,_],[78,_,81,_,78,_,74,_, 76,_,78,_,81,_,83,_]],
+   leadWave:'square',leadLevel:.07,leadLen:1.7,arp:true,arpEvery:1,arpWave:'square'},
+  calm:{name:'Calm',bpm:100,swing:0,                                            // the original v19 tune
+   pad:[[57,61,64],[54,57,61],[52,56,59],[54,57,61]],padLevel:.03,
+   bassRoots:[45,42,40,42],bassPat:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],bassWave:'sine',bassLen:15,
+   kick:null,snare:null,hat:null,fill:false,
+   lead:[[69,_,71,_,73,_,76,_,73,_,71,_,69,_,66,_],[69,_,71,_,74,_,76,_,78,_,76,_,74,_,71,_],
+         [68,_,71,_,73,_,76,_,73,_,71,_,68,_,66,_],[69,_,73,_,76,_,78,_,76,_,73,_,71,_,69,_]],
+   leadWave:'sine',leadLevel:.09,leadLen:1.8,arp:false}
+ };
+ let ctx=null,bus=null,master=null,noiseBuf=null,playing=false,timer=null,nextT=0,step=0,cur=null,intensity=0;
+
+ // ---------- instruments ----------
+ function kick(t){const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(155,t);o.frequency.exponentialRampToValueAtTime(42,t+.13);g.gain.setValueAtTime(.85,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g);g.connect(bus);o.start(t);o.stop(t+.32)}
+ function noise(t,dur,type,freq,level){const s=ctx.createBufferSource();s.buffer=noiseBuf;const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;const g=ctx.createGain();g.gain.setValueAtTime(level,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f);f.connect(g);g.connect(bus);s.start(t,Math.random()*.4);s.stop(t+dur+.02)}
+ function snare(t,v){noise(t,.17,'highpass',1300,.42*v);const o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.setValueAtTime(230,t);o.frequency.exponentialRampToValueAtTime(140,t+.08);g.gain.setValueAtTime(.22*v,t);g.gain.exponentialRampToValueAtTime(.001,t+.11);o.connect(g);g.connect(bus);o.start(t);o.stop(t+.13)}
+ function hat(t,open){noise(t,open?.15:.04,'highpass',7800,open?.13:.085)}
+ function crash(t){noise(t,1.1,'highpass',5200,.16)}
+ function bass(t,m,d,wave){const o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain();o.type=wave;o.frequency.setValueAtTime(mtof(m),t);f.type='lowpass';f.Q.value=wave==='sine'?0:6;f.frequency.setValueAtTime(wave==='sine'?600:1500,t);f.frequency.exponentialRampToValueAtTime(wave==='sine'?500:320,t+Math.max(.08,d));
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(wave==='sine'?.22:.26,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(f);f.connect(g);g.connect(bus);o.start(t);o.stop(t+d+.03)}
+ function lead(t,m,d,wave,level){const o=ctx.createOscillator(),f=ctx.createBiquadFilter(),g=ctx.createGain();o.type=wave;o.frequency.setValueAtTime(mtof(m),t);f.type='lowpass';f.frequency.value=3600;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(level,t+.012);g.gain.setValueAtTime(level,t+d*.45);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(f);f.connect(g);g.connect(bus);o.start(t);o.stop(t+d+.03)}
+ function pad(t,notes,d,level){notes.forEach(m=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.setValueAtTime(mtof(m),t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(level,t+.35);g.gain.setValueAtTime(level,t+d-.35);g.gain.linearRampToValueAtTime(0,t+d);o.connect(g);g.connect(bus);o.start(t);o.stop(t+d+.05)})}
+
+ // ---------- sequencer ----------
+ function tempo(T){return T.bpm*(intensity===2?1.12:1)}
+ function playStep(T,s,t){
+  const st=s&15,bar=(s>>4)&7,c=bar&3,sd=60/tempo(T)/4,tt=t+((st&1)&&T.swing?T.swing*sd:0);
+  if(st===0&&bar===0&&T.kick)crash(t);
+  if(T.kick&&T.kick[st])kick(tt);
+  if(T.snare){const v=T.snare[st]||(T.fill&&(bar===3||bar===7)&&st>=12?.7:0)||(intensity===2&&bar%2===1&&st>=13?.5:0);if(v)snare(tt,v)}
+  let h=T.hat?T.hat[st]:0;if(intensity===2&&!h)h=1;if(h)hat(tt,h===2);
+  const b=T.bassPat[st];if(b)bass(tt,T.bassRoots[c]+(b===2?12:0),sd*T.bassLen,T.bassWave);
+  if(st===0)pad(t,T.pad[c],sd*16*.98,T.padLevel);
+  if(bar<4||!T.arp){const n=T.lead[c][st];if(n)lead(tt,n,sd*T.leadLen,T.leadWave,T.leadLevel)}
+  else if(st%T.arpEvery===0){const ch=T.pad[c],k=(st/T.arpEvery)%(ch.length+1);const n=k<ch.length?ch[k]+12:ch[0]+24;lead(tt,n,sd*T.arpEvery*.85,T.arpWave,T.leadLevel*.75)}
+ }
+ function wanted(){const v=styleSel.value;if(v!=='auto')return v;return intensity>0?'rush':'groove'}
+ function schedule(){if(!playing||!ctx)return;
+  while(nextT<ctx.currentTime+.15){
+   if((step&15)===0){const w=wanted();if(w!==cur){cur=w;step=0;}}
+   const T=TRACKS[cur];playStep(T,step,nextT);nextT+=60/tempo(T)/4;step=(step+1)&127;
+  }
+ }
+ // ---------- react to the game: 0 menu, 1 playing, 2 final 10 seconds ----------
+ function gameIntensity(){try{
+  if(typeof engRunning!=='undefined'&&engRunning)return eng.time<=10?2:1;
+  if(typeof marRunning!=='undefined'&&marRunning)return (mar.duration-mar.elapsed)<=10?2:1;
+  if(typeof balRunning!=='undefined'&&balRunning)return (bal.mode==='challenge'&&bal.time<=10)?2:1;
+  if(window.fuelIntensity){const f=fuelIntensity();if(f)return f}
+ }catch{}return 0}
+ function label(){const T=TRACKS[wanted()];status.textContent=!playing?'Music paused':(intensity===2?'🔥 Final countdown · ':'Playing · ')+T.name}
+ setInterval(()=>{const i=gameIntensity();if(i!==intensity){intensity=i;if(playing)label()}},250);
+
+ function stop(){playing=false;clearInterval(timer);timer=null;if(master&&ctx){master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(0,ctx.currentTime,.08)}
+  button.textContent='♫ Music: Off';button.setAttribute('aria-pressed','false');label()}
+ async function start(){
+  if(!AudioCtx){status.textContent='Audio unavailable in this browser';return}
+  try{
+   if(!ctx){ctx=new AudioCtx();master=ctx.createGain();master.gain.value=0;
+    const comp=ctx.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=4;comp.attack.value=.004;comp.release.value=.2;
+    bus=ctx.createGain();bus.gain.value=1;bus.connect(comp);comp.connect(master);master.connect(ctx.destination);
+    noiseBuf=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);const d=noiseBuf.getChannelData(0);for(let k=0;k<d.length;k++)d[k]=Math.random()*2-1}
+   await ctx.resume();if(ctx.state!=='running'){status.textContent='Audio blocked by browser';return}
+   playing=true;cur=null;step=0;nextT=ctx.currentTime+.08;
+   master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setTargetAtTime(Number(volume.value)/100*.8,ctx.currentTime,.1);
+   schedule();timer=setInterval(schedule,25);
+   button.textContent='♫ Music: On';button.setAttribute('aria-pressed','true');label();
+  }catch(e){status.textContent='Audio could not start here';playing=false}
+ }
+ button.addEventListener('click',()=>{if(playing)stop();else start()});
+ styleSel.addEventListener('change',()=>{try{localStorage.setItem('aero-music-style',styleSel.value)}catch{}label();if(!playing)start()});
+ volume.addEventListener('input',()=>{if(master&&ctx)master.gain.setTargetAtTime(playing?Number(volume.value)/100*.8:0,ctx.currentTime,.06)});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing)stop()});
+})();
+</script><style>
+.sfx-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:5px 0 12px;padding:8px 12px;border-radius:12px;background:#eaf5fb;border:1px solid #bbd9e9}
+.sfx-controls button{padding:8px 12px;min-height:38px;font-size:13px;border-radius:9px}.sfx-controls label{font-size:13px;font-weight:700}.sfx-controls input{width:105px;accent-color:#1688c7}.sfx-controls small{color:#46647b}
+</style>
+<script>
+/* v19.3: independent, user-enabled feedback audio; does not modify gameplay scoring. */
+(function(){
+ const host=document.querySelector('.music-controls');
+ if(!host)return;
+ const bar=document.createElement('div');bar.className='sfx-controls';
+ bar.innerHTML='<button id="sfxToggle" type="button" class="grey" aria-pressed="false">🔔 Effects: Off</button><label for="sfxVolume">Effects volume</label><input id="sfxVolume" type="range" min="0" max="100" value="45"><small>Ding · Fanfare · Bwomp · Buzzer · Countdown</small>';
+ host.insertAdjacentElement('afterend',bar);
+ const toggle=document.getElementById('sfxToggle'),vol=document.getElementById('sfxVolume');
+ let ctx=null,enabled=false;
+ const AC=window.AudioContext||window.webkitAudioContext;
+ function unlock(){if(!AC)return false;try{if(!ctx)ctx=new AC();if(ctx.state==='suspended')ctx.resume().catch(()=>{});return true}catch{return false}}
+ function tone(freq,when,dur,amp=0.12,type='sine'){
+  if(!enabled||!ctx||ctx.state!=='running')return;
+  const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(freq,when);
+  gain.gain.setValueAtTime(.0001,when);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,amp*Number(vol.value)/100),when+.018);
+  gain.gain.exponentialRampToValueAtTime(.0001,when+dur);
+  osc.connect(gain);gain.connect(ctx.destination);osc.start(when);osc.stop(when+dur+.025);
+ }
+ function sweep(f1,f2,when,dur,amp,type){const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(f1,when);osc.frequency.exponentialRampToValueAtTime(f2,when+dur);
+  gain.gain.setValueAtTime(.0001,when);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,amp*Number(vol.value)/100),when+.015);gain.gain.exponentialRampToValueAtTime(.0001,when+dur);
+  osc.connect(gain);gain.connect(ctx.destination);osc.start(when);osc.stop(when+dur+.03)}
+ let nb=null;function sparkle(when,dur,amp){if(!nb){nb=ctx.createBuffer(1,ctx.sampleRate/2,ctx.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+  const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=nb;f.type='highpass';f.frequency.value=6000;g.gain.setValueAtTime(amp*Number(vol.value)/100,when);g.gain.exponentialRampToValueAtTime(.0001,when+dur);s.connect(f);f.connect(g);g.connect(ctx.destination);s.start(when);s.stop(when+dur+.02)}
+ function sound(kind,arg){if(!enabled||!unlock()||ctx.state!=='running')return;const t=ctx.currentTime+.01;
+  // coin "ding-ding" for each correct action
+  if(kind==='win'){tone(988,t,.08,.15,'square');tone(1319,t+.075,.26,.15,'square')}
+  // fanfare for a finished engine / balanced rotor
+  if(kind==='fanfare'){[523,659,784].forEach((f,i)=>tone(f,t+i*.085,.12,.13,'square'));tone(1047,t+.255,.5,.15,'square');tone(659,t+.255,.5,.08,'triangle');tone(784,t+.255,.5,.08,'triangle');sparkle(t+.25,.45,.08)}
+  // "bwomp" for a wrong part / wrong lane / bird hazard
+  if(kind==='lose'){sweep(440,150,t,.32,.16,'square');sweep(220,75,t+.02,.34,.12,'triangle')}
+  // game-show buzzer for a failed balance check
+  if(kind==='buzzer'){tone(138,t,.42,.17,'sawtooth');tone(146,t,.42,.14,'sawtooth');tone(69,t,.42,.12,'square')}
+  // countdown: crisp clock tick, double-beep for the last 3 seconds
+  if(kind==='tick'){tone(1480,t,.035,.13,'square');if(arg<=3){tone(1975,t+.09,.07,.12,'square')}}
+ }
+ window.aeroSfx=sound;
+ toggle.addEventListener('click',()=>{if(!enabled){if(!unlock()){toggle.textContent='Audio unsupported';return}enabled=true;toggle.textContent='🔔 Effects: On';toggle.setAttribute('aria-pressed','true');sound('win')}else{enabled=false;toggle.textContent='🔔 Effects: Off';toggle.setAttribute('aria-pressed','false')}});
+ // v19.8: games call window.aeroSfx() directly at the moment something happens (no score polling).
+})();
+</script>
+<style>
+.emergency-route{left:50%;width:48%;height:22px;top:85%;background:#e5ebec;border-top:2px solid white;border-bottom:2px solid white;opacity:1}
+.emergency-route:after{content:"";position:absolute;inset:9px 0 auto 0;border-top:2px dashed #f5b936}
+.emergency-sign{bottom:10%;right:3%}
+.balance-mode{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.balance-mode button{flex:1;min-width:160px}.balance-meter{width:min(94%,400px);margin:0 auto 12px;text-align:center;font-weight:800}.meter-track{height:14px;background:#d6e0e8;border-radius:12px;overflow:hidden;margin:7px 0}.meter-track>div{height:100%;width:0%;background:#e99e36;transition:width .25s}.balance-meter small{font-weight:600;color:#49657c}.help-panel{margin-top:12px;background:#e8f5ff;border:1px solid #b9d9ee;padding:12px;border-radius:14px}.help-panel p{line-height:1.5;margin:9px 0}.help-panel button{margin:4px}.rotor-slot.selected .rotor-shape{stroke:#f0a520;stroke-width:6}.rotor-spin{transform-origin:180px 180px;animation:balSpin .75s linear infinite}.rotor-spin.shaky{animation:balWobble .32s linear infinite}@keyframes balSpin{to{transform:rotate(360deg)}}@keyframes balWobble{0%,100%{transform:rotate(-3deg) translateX(-5px)}50%{transform:rotate(3deg) translateX(5px)}}
+
+/* v17: coherent world: all lane geometry shares the simulation coordinate system */
+#marshalPage .marsh-stage{height:clamp(500px,65vw,700px);min-height:500px;background:#aebbc0;border:4px solid #3a6177;box-shadow:0 6px 0 #294c61}
+#marshalPage .world{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#marshalPage .road,#marshalPage .branch,#marshalPage .emergency-route{display:none!important}
+#marshalPage .lane-sign{z-index:4;background:#111d2b;color:#ffd543;border:3px solid #ffd543;box-shadow:0 3px 0 #172c3e;top:auto;font-size:clamp(13px,1.8vw,18px)}
+#marshalPage .lane-sign.left{left:5%}#marshalPage .lane-sign.right{right:5%}
+#marshalPage .lane-sign.target{background:#ffda45;color:#152b3c;outline:3px solid #ef8533}
+#marshalPage .airplane{width:clamp(75px,12vw,132px);height:clamp(88px,14vw,150px);z-index:7;filter:drop-shadow(5px 8px 3px #152e4480)}
+#marshalPage .marshaler{z-index:8;bottom:0}#marshalPage .marshaler svg{width:clamp(72px,11vw,105px);height:clamp(92px,14vw,130px)}
+#marshalPage .signal{font-size:12px;font-weight:800;color:#18374b}
+#marshalPage .controls button{min-height:64px}
+@media(max-width:650px){#marshalPage .marsh-stage{height:560px}#marshalPage .airplane{width:80px;height:100px}}
+</style>
+
+<style>
+/* v19.7 */
+.debrief{background:#eaf6ff;border:2px solid #b7dbf0;border-radius:14px;padding:10px 12px;margin:4px 0 12px;font-size:14px;line-height:1.45}
+.debrief p{margin:6px 0}.debrief .cta{background:#fff4c7;border-radius:10px;padding:8px 10px;font-weight:700}.debrief a{color:#145f94}
+.score-entry-card{max-height:92vh;overflow:auto}
+.manage-scores{grid-column:1/-1;justify-self:start;background:#4f6377}
+.leaderboards{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+@media(max-width:600px){
+ .music-controls,.sfx-controls{display:inline-flex;margin:4px 6px 6px 0;padding:5px 6px;border-radius:10px;vertical-align:top}
+ .music-controls label,.music-controls input,.music-state,.sfx-controls label,.sfx-controls input,.sfx-controls small{display:none}
+ #marshalPage>p:not(.message):not(.big){display:none}
+ #marshalPage h2{font-size:20px;margin:4px 0}
+ #marshalPage .marsh-stage{height:min(540px,56vh);min-height:330px}
+ #marshalPage .controls button{min-height:54px}
+}
+</style>
+
+<style>
+/* v19.8: event leaderboards + non-colour cues */
+.board-head{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.board-head h3{margin:0;color:#17405c}
+.board-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:#eef6fb;border:1px dashed #8fb8d2;border-radius:12px;padding:8px}
+.board-tools label{font-size:13px;font-weight:800}.board-tools select{font-size:14px;padding:6px 8px;border-radius:8px;border:2px solid #9fc9e1;max-width:220px}
+.board-tools .clear-scores{margin-top:0}.clear-scores.danger{background:#b64b5b}
+.slot.done b::before{content:'✓ ';font-weight:950}
+#marshalPage .lane-sign.target::after{content:' ◀ GO';font-size:.75em;letter-spacing:.5px}
+@media (prefers-reduced-motion:reduce){.belt,.engine-mission .belt-track{animation-duration:160s!important}.rotor-spin,.rotor-spin.shaky{animation:none!important}}
+</style>
+
+<style>
+/* =====================================================================
+   v19.9 — Landscape notebook layout (16:9 / 16:10 / 3:2 laptops, landscape tablets).
+   Every screen fits in one viewport, no page scrolling. Phones keep the portrait layout.
+   ===================================================================== */
+@media (orientation:landscape) and (min-width:900px) and (min-height:520px){
+ html,body{height:100%;overflow:hidden}
+ main{max-width:none;height:100vh;padding:10px 18px 12px;display:flex;flex-wrap:wrap;align-content:flex-start;align-items:center;gap:8px 10px}
+ /* ---- one-line top bar: title · sound · full screen · version ---- */
+ main>header{order:0;flex:0 0 auto;gap:12px}
+ main>header h1{font-size:clamp(20px,2.2vw,28px);margin:0}
+ .music-controls,.sfx-controls{order:1;flex:0 0 auto;margin:0;padding:4px 8px;gap:6px;border-radius:10px}
+ .music-state,.sfx-controls small{display:none}
+ .music-controls input,.sfx-controls input{width:80px}
+ .music-controls label,.sfx-controls label{font-size:12px}
+ .music-controls button,.sfx-controls button{min-height:32px;padding:6px 10px;font-size:12px}
+ #fullscreenBtn{order:2;margin-left:auto;min-height:32px;padding:6px 12px;font-size:13px}
+ main>.panel{order:3;flex:1 1 100%;margin:0;height:calc(100vh - 74px);overflow:hidden;padding:12px 16px}
+ .footer{display:none}
+ .panel .toolbar .pill,.panel .toolbar .score{padding:7px 11px}
+ .panel>.toolbar:first-child button{padding:9px 13px}
+
+ /* ---- MENU: three missions across, leaderboards below ---- */
+ #menu{overflow:auto;display:flex;flex-direction:column}
+ #menu h2{margin:0 0 4px}#menu>p{margin:0 0 10px}
+ #menu .menu{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+ #menu .choice{padding:clamp(10px,2vh,18px) 12px;font-size:clamp(16px,1.5vw,20px)}
+ #menu .choice .emoji{font-size:clamp(38px,7vh,62px)}
+ #menu .leaderboards{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:12px}
+ #menu .leaderboard{padding:9px 11px}#menu .leaderboard li{padding:3px 0}
+ #menu .board-head{grid-column:1/-1}#menu .manage-scores{grid-column:1/-1}
+ #menu>.hint{margin:8px 0 0}
+
+ /* ---- ENGINE ASSEMBLY: stand on top, conveyor below, status row at the bottom ---- */
+ #enginePage{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto minmax(0,1fr) auto auto auto;
+  grid-template-areas:"tb tb" "title type" "hangar hangar" "beltt beltt" "belt belt" "msg start";column-gap:12px;row-gap:6px}
+ #enginePage>.toolbar:first-child{grid-area:tb}
+ #enginePage>h2{grid-area:title;margin:0;font-size:clamp(18px,1.8vw,24px)}
+ #enginePage>.engine-instruction{display:none}
+ #enginePage>.engine-type{grid-area:type;margin:0;padding:8px 14px;font-size:15px;align-self:center}
+ #enginePage>.engine-hangar{grid-area:hangar;min-height:0;display:flex}
+ #enginePage .engine-worktop{flex:1;display:flex;flex-direction:column;min-height:0;padding:10px 12px 14px}
+ #enginePage .engine-board-label{padding:6px 12px}
+ #enginePage .engine-preview{flex:1 1 auto;min-height:60px;margin:4px auto 0;width:100%}
+ #enginePage .engine-preview svg{max-height:min(19vh,190px);height:100%}
+ #enginePage .engine{flex:0 0 auto;padding-top:4px}
+ #enginePage .slot{min-height:clamp(86px,15vh,125px);flex-basis:88px}
+ #enginePage .slot .sym svg{height:clamp(38px,7vh,62px)}
+ #enginePage>.engine-belt-title{grid-area:beltt;margin:0;padding:6px 12px}
+ #enginePage>.belt{grid-area:belt;height:clamp(104px,17vh,142px)}
+ #enginePage .belt-track .part{height:calc(clamp(104px,17vh,142px) - 28px);min-width:128px;flex-basis:128px}
+ #enginePage .part span{height:auto;flex:1 1 auto;min-height:0}
+ #enginePage .part span svg{height:100%;max-height:66px}
+ #enginePage>.message{grid-area:msg;margin:0;min-height:0;padding:9px 12px;align-self:stretch;display:flex;align-items:center}
+ #enginePage>.toolbar:last-child{grid-area:start;flex-direction:column;align-items:stretch;justify-content:center;gap:4px}
+ #enginePage>.toolbar:last-child .hint{font-size:11px;max-width:220px}
+
+ /* ---- MARSHALLING: airfield on the left, all controls on the right ---- */
+ #marshalPage{display:grid;grid-template-columns:auto minmax(300px,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto;
+  grid-template-areas:"tb tb" "stage title" "stage dest" "stage msg" "stage ctl" "stage start" "stage hint";column-gap:18px;row-gap:8px}
+ #marshalPage>.toolbar:first-child{grid-area:tb}
+ #marshalPage>h2{grid-area:title;margin:0;font-size:clamp(18px,1.8vw,24px)}
+ #marshalPage>#missionText{grid-area:dest;margin:0;font-size:clamp(20px,2.2vw,30px)}
+ #marshalPage .marsh-stage{grid-area:stage;height:calc(100vh - 168px);min-height:0;width:auto;aspect-ratio:5/4;margin:0;align-self:start}
+ #marshalPage>.message{grid-area:msg;margin:0}
+ #marshalPage>.controls{grid-area:ctl;margin:0;align-content:center;grid-template-columns:repeat(3,1fr);gap:10px}
+ #marshalPage .controls button{min-height:clamp(58px,11vh,96px);font-size:clamp(15px,1.5vw,22px)}
+ #marshalPage>.toolbar:nth-child(7){grid-area:start;margin-top:0!important;flex-direction:column;align-items:stretch;gap:6px}
+ #marshalPage>.toolbar:nth-child(7) .hint{font-size:12px}
+ #marshalPage>p.hint:last-child{grid-area:hint;margin:0;font-size:11px}
+ /* aircraft and marshaller sized from the airfield height, not page width */
+ #marshalPage .airplane{width:clamp(56px,10.5vh,120px);height:clamp(66px,12.5vh,142px)}
+ #marshalPage .marshaler svg{width:clamp(56px,10vh,104px);height:clamp(70px,12.5vh,130px)}
+ #marshalPage .lane-sign{font-size:clamp(12px,1.9vh,18px)}
+ #marshalPage .bird-warning{font-size:clamp(12px,1.9vh,17px)}
+ #marshalPage .result-overlay>div{max-width:300px;padding:16px}
+
+ /* ---- FAN BLADE BALANCING: rotor on the left, everything else on the right ---- */
+ #balancePage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto;
+  grid-template-areas:"tb tb" "rotor title" "rotor modes" "rotor info" "rotor blades" "rotor msg" "rotor start";column-gap:16px;row-gap:7px}
+ #balancePage>.toolbar:first-child{grid-area:tb}
+ #balancePage>h2{grid-area:title;margin:0;font-size:clamp(18px,1.8vw,24px)}
+ #balancePage>h2+p{display:none}
+ #balancePage>.balance-mode{grid-area:modes;margin:0}
+ #balancePage .balance-mode button{min-width:0;padding:9px 10px}
+ #balancePage>.balance-info{grid-area:info;font-size:14px;padding:8px 12px}
+ #balancePage>.balance-layout{display:contents}
+ #balancePage .rotor-panel{grid-area:rotor;min-height:0;align-content:center;padding:8px}
+ #balancePage .rotor-panel svg{max-width:none;width:auto;height:calc(100vh - 250px);max-height:600px;aspect-ratio:1}
+ #balancePage .balance-meter{font-size:15px;margin-bottom:4px}
+ #balancePage .blade-panel{grid-area:blades;min-height:0;overflow:auto;padding:10px 12px}
+ #balancePage .blade-panel>b{font-size:16px}
+ #balancePage .blade-panel>.hint{margin:4px 0}
+ #balancePage .blade-tray{margin:6px 0;font-size:13px}
+ #balancePage .blade-tray>div{line-height:1.45!important}
+ #balancePage .help-panel{margin-top:6px;padding:8px 10px;font-size:14px}
+ #balancePage .help-panel p{margin:5px 0;line-height:1.4}
+ #balancePage .help-panel button,#balancePage .blade-panel>button{padding:8px 12px;font-size:14px}
+ #balancePage>.message{grid-area:msg;margin:0;min-height:0}
+ #balancePage>.toolbar:last-child{grid-area:start}
+ #balancePage>.toolbar:last-child .hint{font-size:11px;flex:1;text-align:right}
+
+ /* dialogs: keep inside a short landscape screen */
+ .mission-launch-card{padding:20px 24px}
+ .score-entry-card{max-height:calc(100vh - 30px)}
+}
+/* v19.9 fit tweaks */
+@media (orientation:landscape) and (min-width:900px) and (min-height:520px){
+ #menu .menu{flex:1 1 auto;min-height:130px;max-height:40vh}
+ #menu .choice{display:flex;flex-direction:column;align-items:center;justify-content:center}
+ #enginePage .engine-preview{flex:1 1 0;min-height:64px;display:flex}
+ #enginePage .engine-preview svg{height:100%;width:auto;max-width:100%;max-height:none}
+ #enginePage .engine-stand{height:10px;margin-top:3px;box-shadow:0 4px 0 #3b4955}
+ #enginePage .engine-stand span{display:none}
+ #enginePage .slot{min-height:clamp(76px,13.5vh,125px);gap:2px;padding:4px}
+ #enginePage .slot .sym svg{height:clamp(30px,6vh,62px)}
+ #enginePage>.belt{height:clamp(96px,16vh,142px)}
+ #enginePage .belt-track .part{height:calc(clamp(96px,16vh,142px) - 26px)}
+ #balancePage .blade-panel{display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px}
+ #balancePage .blade-panel>*{flex:1 1 100%;margin:0}
+ #balancePage .blade-panel>b{order:0}
+ #balancePage #balanceCheck,#balancePage #balanceReset{order:1;flex:1 1 40%;margin:0;padding:10px 12px;font-size:15px}
+ #balancePage .blade-panel>.hint{order:2}
+ #balancePage #bladeTray{order:3}
+ #balancePage .blade-panel>.help-panel{order:4}
+}
+/* Short laptop screens (e.g. 1366×768 with browser bars): trim a little more */
+@media (orientation:landscape) and (min-width:900px) and (max-height:700px) and (min-height:520px){
+ #balancePage .blade-panel>.hint{display:none!important}
+ #enginePage .engine-board-label{padding:4px 10px;font-size:11px}
+ #marshalPage>p.hint:last-child{display:none}
+ #menu .choice small{display:none}
+ #balancePage #bladeTray>div{column-count:2;column-gap:14px;font-size:12px;line-height:1.35!important}
+ #balancePage .help-panel p{font-size:13px}
+ #balancePage .help-panel button{padding:6px 10px;font-size:13px}
+}
+</style>
+<script>
+(function(){const b=document.getElementById('fullscreenBtn');if(!b)return;const el=document.documentElement;
+ const can=el.requestFullscreen||el.webkitRequestFullscreen;if(!can){b.hidden=true;return}
+ const sync=()=>{const on=document.fullscreenElement||document.webkitFullscreenElement;b.textContent=on?'⤡ Exit full screen':'⛶ Full screen'};
+ b.onclick=()=>{if(document.fullscreenElement||document.webkitFullscreenElement)(document.exitFullscreen||document.webkitExitFullscreen).call(document);else can.call(el).catch?.(()=>{})};
+ document.addEventListener('fullscreenchange',sync);document.addEventListener('webkitfullscreenchange',sync);
+ // in portrait the button sits under the title; keep it small there
+ b.style.cssText+='min-height:34px;padding:6px 12px;font-size:13px;';
+})();
+</script>
+<style>
+/* v20 music selector */
+#musicStyle{font:inherit;font-size:13px;font-weight:700;color:#173d55;background:#fff;border:2px solid #9fc9e1;border-radius:9px;padding:6px 8px;min-height:36px;cursor:pointer}
+@media (orientation:landscape) and (min-width:900px) and (min-height:520px){#musicStyle{min-height:32px;padding:4px 6px;font-size:12px}}
+@media(max-width:600px){#musicStyle{display:inline-block;font-size:12px;padding:5px 4px;max-width:120px}}
+</style>
+
+<style>
+/* ===================== v22 Aircraft Refuelling ===================== */
+.choice{position:relative}.choice-new{border-color:#f3a72c;background:#fff8e3}.choice-new:hover{background:#fff0c4}
+.new-badge{position:absolute;top:10px;right:12px;background:#e23b4e;color:#fff;font-size:12px;font-weight:950;letter-spacing:1px;padding:3px 8px;border-radius:8px}
+.fuel-mission h2{margin:6px 0}.fuel-intro{margin:4px 0 8px}
+.fuel-stage{position:relative;width:100%;aspect-ratio:1200/520;border:4px solid #294e69;border-radius:16px;overflow:hidden;background:#cfe9f8;touch-action:manipulation;user-select:none;box-shadow:0 5px 0 #234d67;cursor:pointer}
+.fuel-stage svg{display:block;width:100%;height:100%}
+.fuel-pt.sel circle{stroke:#ffb300;stroke-width:7;animation:fuelPulse .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+.fuel-hint{animation:fuelPulse .45s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes fuelPulse{from{transform:scale(.9)}to{transform:scale(1.12)}}
+.fuel-flow{animation:fuelFlow 1s linear infinite}@keyframes fuelFlow{to{stroke-dashoffset:-48}}
+.fuel-drip{animation:fuelDrip .35s linear infinite alternate}@keyframes fuelDrip{to{opacity:.4}}
+.fuel-banner{position:absolute;left:50%;top:10px;transform:translateX(-50%);color:#fff;font-weight:950;font-size:clamp(13px,1.7vw,21px);padding:9px 18px;border-radius:12px;z-index:3;white-space:nowrap;box-shadow:0 4px 0 #0005}
+.fuel-banner.danger{background:#d6343f;animation:fuelFlash .4s step-end infinite alternate}.fuel-banner.ok{background:#19a974}.fuel-banner.wait{background:#e08a12}
+@keyframes fuelFlash{50%{background:#8f1d26}}
+.fuel-driver{position:absolute;right:3%;top:44%;background:#fff;color:#14283a;border:3px solid #2b7bd0;border-radius:14px;padding:6px 12px;font-weight:900;font-size:clamp(12px,1.4vw,17px);z-index:3;box-shadow:0 3px 0 #1d4f86}
+.fuel-side{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:10px}
+.fuel-steps-box{grid-column:1/-1;background:#f2f8fc;border:2px solid #c2ddea;border-radius:14px;padding:8px 12px}
+.fuel-steps-box ol{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:3px}
+.fuel-steps-box li{font-size:14px;font-weight:700;color:#3b5870;padding:3px 8px;border-radius:8px}
+.fuel-steps-box li.done{color:#116747;background:#d5f5e7}.fuel-steps-box li.next{background:#fff1b0;color:#5b3d00;font-weight:900;outline:2px solid #f0b429}
+.fuel-steps-box li.check{font-weight:600}
+.fuel-gauge-box{grid-column:1/-1;display:flex;gap:12px;align-items:stretch;background:#f2f8fc;border:2px solid #c2ddea;border-radius:14px;padding:8px 12px}
+.fuel-gauge{position:relative;width:48px;min-height:130px;border:3px solid #294e69;border-radius:10px;background:#e8eef2;overflow:hidden;flex:0 0 auto}
+#fuelFill{position:absolute;left:0;right:0;bottom:0;height:0;background:#2bb36c;transition:height .08s linear}#fuelFill.near{background:#f0b429}#fuelFill.over{background:#f08c28}#fuelFill.spill{background:#d6343f}
+#fuelLimitZone{position:absolute;left:0;right:0;background:repeating-linear-gradient(45deg,#f6b3bb 0 6px,#fde3e6 6px 12px)}
+#fuelTargetLine{position:absolute;left:0;right:0;height:4px;background:#14283a}
+.fuel-readout{flex:1;display:flex;flex-direction:column;gap:3px;font-size:14px}
+.fuel-readout .row{display:flex;justify-content:space-between;gap:8px}.fuel-readout .row span{color:#4e6a80}
+.fuel-order{font-weight:950;font-size:17px;color:#14283a}.fuel-left{font-weight:900;color:#a04d00}.fuel-limit{font-size:12px;color:#b02a37;font-weight:800}
+.fuel-signals{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fuel-signals button{min-height:56px;font-size:16px}
+#sigStart{background:#2b7bd0}#sigSlow{background:#f0a024;color:#3b2600}#sigFull{background:#0b8f63}#sigStop{background:#d6343f}
+#sigDone{grid-column:1/-1}
+@media (max-width:600px){.fuel-signals{grid-template-columns:repeat(2,1fr)}.fuel-signals button{min-height:62px}}
+@media (prefers-reduced-motion:reduce){.fuel-pt.sel circle,.fuel-hint,.fuel-banner.danger{animation:none}}
+/* landscape notebook: airfield left, procedure + gauge + signals right */
+@media (orientation:landscape) and (min-width:900px) and (min-height:520px){
+ #fuelPage{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,340px);grid-template-rows:auto auto minmax(0,1fr) auto auto;
+  grid-template-areas:"tb tb" "stage title" "stage side" "msg side" "start side";column-gap:16px;row-gap:8px}
+ #fuelPage>.toolbar:first-child{grid-area:tb}
+ #fuelPage>h2{grid-area:title;margin:0;font-size:clamp(18px,1.8vw,24px)}
+ #fuelPage>.fuel-intro{display:none}
+ #fuelPage>.fuel-stage{grid-area:stage;align-self:start;justify-self:center;width:min(100%,calc((100vh - 290px) * 2.3077))}
+ #fuelPage>.fuel-side{grid-area:side;margin:0;min-height:0;grid-template-rows:minmax(0,1fr) auto auto auto;align-content:start}
+ #fuelPage .fuel-steps-box{min-height:0;overflow:auto}
+ #fuelPage .fuel-steps-box li{font-size:13px;padding:2px 7px}
+ #fuelPage .fuel-gauge{min-height:112px}
+ #fuelPage .fuel-signals{grid-template-columns:repeat(2,1fr);gap:6px}
+ #fuelPage .fuel-signals button{min-height:clamp(44px,7.5vh,66px);font-size:clamp(14px,1.3vw,18px);padding:6px}
+ #fuelPage>.message{grid-area:msg;margin:0;min-height:0;padding:9px 12px}
+ #fuelPage>.toolbar:last-child{grid-area:start}
+ #fuelPage>.toolbar:last-child .hint{font-size:11px}
+ #menu .choice-new .new-badge{top:6px;right:8px;font-size:11px}
+ #fuelPage[data-phase=setup] .fuel-gauge-box,#fuelPage[data-phase=idle] .fuel-gauge-box{display:none}
+ #fuelPage[data-phase=setup] .fuel-steps-box li{font-size:13.5px;padding:3px 8px}
+}
+</style>
+<script>
+/* ===================== v22: AIRCRAFT REFUELLING ===================== */
+(function(){
+ const W=1200,H=520;
+ const FUS='M96 258C96 222 140 192 230 190L880 190C950 190 1010 172 1088 150L1100 158C1090 190 1040 240 980 280C950 300 920 310 880 310L230 310C150 310 96 292 96 258Z';
+
+ function scene(on){
+  const has=id=>on.has(id);let s='';
+  s+=`<defs><linearGradient id="wkSky" x2="0" y2="1"><stop stop-color="#9fd6f5"/><stop offset="1" stop-color="#e6f6ff"/></linearGradient>
+   <linearGradient id="wkApron" x2="0" y2="1"><stop stop-color="#aab6bb"/><stop offset="1" stop-color="#8f9ca2"/></linearGradient>
+   <linearGradient id="wkBody" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset=".65" stop-color="#eef4f8"/><stop offset="1" stop-color="#cdd9e1"/></linearGradient>
+   <linearGradient id="wkNac" x2="0" y2="1"><stop stop-color="#f4f8fb"/><stop offset="1" stop-color="#b9c7d1"/></linearGradient>
+   <clipPath id="wkFus"><path d="${FUS}"/></clipPath></defs>`;
+  // sky, terminal & hangar in the distance, apron
+  s+=`<rect width="${W}" height="335" fill="url(#wkSky)"/>
+   <g opacity=".55"><rect x="20" y="210" width="34" height="125" fill="#8fa9b8"/><rect x="8" y="188" width="58" height="26" rx="6" fill="#6f8ea1"/><rect x="14" y="194" width="46" height="10" fill="#cdeaf7"/>
+   <path d="M760 335V215Q900 150 1180 215V335Z" fill="#b9cbd6"/><path d="M800 335V245H1140V335" fill="#a3b8c4"/><text x="970" y="232" text-anchor="middle" font-size="18" font-weight="900" fill="#6f8ea1" letter-spacing="3">HANGAR 2</text></g>
+   <rect y="330" width="${W}" height="${H-330}" fill="url(#wkApron)"/>
+   <path d="M0 492H${W}" stroke="#f5c542" stroke-width="5" stroke-dasharray="34 22"/>
+   <path d="M0 405H${W}M300 330V520M900 330V520" stroke="#9aa7ad" stroke-width="2"/>
+   <path d="M290 470l10-26 10 26z" fill="#f47c2c" stroke="#b9541a" stroke-width="2"/><path d="M294 461h12" stroke="#fff" stroke-width="3"/>
+   `;
+  // shadow
+  s+=`<ellipse cx="620" cy="474" rx="470" ry="12" fill="#556269" opacity=".35"/>`;
+  if(has('hyd'))s+=`<ellipse cx="702" cy="474" rx="40" ry="7" fill="#8c1838" opacity=".85"/><ellipse cx="690" cy="472" rx="14" ry="2.5" fill="#e8a0b4" opacity=".7"/>`;
+  if(has('fod'))s+=`<g transform="rotate(-18 372 462)"><rect x="360" y="459" width="22" height="6" rx="2" fill="#8d98a0" stroke="#3d4a52" stroke-width="1.5"/><path d="M360 459v6M364 459v6M368 459v6M372 459v6" stroke="#3d4a52" stroke-width="1"/><path d="M382 455h7v14h-7z" fill="#a9b4bb" stroke="#3d4a52" stroke-width="1.5"/></g><path d="M384 452l3-6M388 455l6-2" stroke="#fff" stroke-width="2"/>`;
+  s+='<g transform="translate(0 45)">';
+  // tail fin + horizontal stabiliser (behind fuselage)
+  s+=`<path d="M880 196L985 58H1050L1068 152L1000 176Z" fill="#1f5f99" stroke="#163e5c" stroke-width="3"/>
+   <path d="M985 58H1050L1053 72H975Z" fill="#2fb3a3"/>
+   <circle cx="995" cy="118" r="21" fill="#fff"/><text x="995" y="126" text-anchor="middle" font-size="20" font-weight="950" fill="#1f5f99">AB</text>`;
+  if(has('bolt'))s+=`<g fill="#1d1f22" opacity=".9"><circle cx="1036" cy="88" r="3.5"/><circle cx="1044" cy="94" r="2.5"/><circle cx="1032" cy="97" r="2.5"/><circle cx="1047" cy="85" r="2"/></g><path d="M1028 84q12-10 22 6q-8 14-22 4z" fill="#3a2a1c" opacity=".35"/>`;
+  // fuselage
+  s+=`<path d="${FUS}" fill="url(#wkBody)" stroke="#2f4f66" stroke-width="3"/>
+   <g clip-path="url(#wkFus)"><rect x="90" y="262" width="1020" height="5" fill="#2fb3a3"/><rect x="90" y="270" width="1020" height="13" fill="#1f5f99"/><rect x="90" y="292" width="1020" height="30" fill="#d9e3ea"/></g>
+   <path d="M150 212L172 203L214 201V220L158 222Z" fill="#23435a"/><path d="M180 203v18M198 201v20" stroke="#dbe9f2" stroke-width="2"/>`;
+  for(let x=292;x<=860;x+=30)s+=`<rect x="${x}" y="222" width="12" height="16" rx="6" fill="#2c4f68"/>`;
+  s+=`<rect x="244" y="204" width="26" height="78" rx="9" fill="none" stroke="#97adbd" stroke-width="2"/><rect x="884" y="208" width="24" height="70" rx="9" fill="none" stroke="#97adbd" stroke-width="2"/>`;
+  s+=`<path d="M1088 150L1100 158L1104 164L1092 160Z" fill="#59656d"/><circle cx="1101" cy="160" r="3.5" fill="#fff" stroke="#59656d"/>`;
+  // horizontal stabiliser + static wicks
+  s+=`<path d="M960 214L1078 190L1110 196L1000 222Z" fill="#e3ebf1" stroke="#2f4f66" stroke-width="2.5"/>`;
+  s+=`<path d="M1096 199l17 4M1052 209l17 4" stroke="#3d4a52" stroke-width="3" stroke-linecap="round"/>`;
+  s+=has('wick')?`<path d="M1074 204l4 1" stroke="#3d4a52" stroke-width="3" stroke-linecap="round"/><path d="M1080 206l3 3" stroke="#3d4a52" stroke-width="1.5"/>`:`<path d="M1074 204l17 4" stroke="#3d4a52" stroke-width="3" stroke-linecap="round"/>`;
+  // cargo door
+  s+=has('cargo')?`<rect x="330" y="270" width="80" height="8" fill="#0f1a24"/><rect x="332" y="277" width="80" height="29" rx="5" fill="#e6eef3" stroke="#5f7686" stroke-width="2"/><rect x="392" y="284" width="26" height="7" rx="2" fill="#f2b233" stroke="#8a6210" transform="rotate(24 392 287)"/>`
+   :`<rect x="330" y="270" width="80" height="30" rx="5" fill="none" stroke="#97adbd" stroke-width="2"/><rect x="392" y="282" width="12" height="5" rx="2" fill="#97adbd"/>`;
+  // belly access panel
+  s+=has('panel')?`<rect x="560" y="296" width="40" height="11" fill="#141f28"/><rect x="566" y="306" width="30" height="9" fill="#cdd9e1" stroke="#5f7686" transform="rotate(16 566 306)"/>`
+   :`<rect x="560" y="296" width="40" height="11" fill="none" stroke="#97adbd" stroke-width="1.6"/><g fill="#97adbd"><circle cx="563" cy="299" r="1.3"/><circle cx="597" cy="299" r="1.3"/><circle cx="563" cy="304" r="1.3"/><circle cx="597" cy="304" r="1.3"/></g>`;
+  // antenna + beacon on top
+  s+=has('antenna')?`<path d="M412 190L417 182H425L428 190Z" fill="#8aa0ae" stroke="#4d6170" stroke-width="1.5"/><path d="M420 180l16 -9l3 4l-16 9z" fill="#8aa0ae" stroke="#4d6170" stroke-width="1.5"/><path d="M417 182l3-3M424 182l2-4" stroke="#4d6170" stroke-width="1.3"/>`
+   :`<path d="M412 190L420 170H432L428 190Z" fill="#8aa0ae" stroke="#4d6170" stroke-width="1.5"/>`;
+  s+=has('beacon')?`<ellipse cx="640" cy="187" rx="10" ry="6" fill="#5b2c31" stroke="#2a1416" stroke-width="1.5"/><path d="M633 184l5 3l-2 3M641 182l2 4l4 1M645 188l-4 1" stroke="#f3d3d6" stroke-width="1.3" fill="none"/><path d="M652 189l5 -2l-1 4z" fill="#e63946"/>`
+   :`<ellipse cx="640" cy="187" rx="10" ry="6" fill="#e63946" stroke="#8d1f29" stroke-width="1.5"/><ellipse cx="637" cy="185" rx="3" ry="1.6" fill="#ffd1d6"/>`;
+  // nose details: pitot, bird strike, cockpit crack
+  s+=`<path d="M166 262H142" stroke="#5f6f7a" stroke-width="3.2" stroke-linecap="round"/><path d="M167 255v14" stroke="#5f6f7a" stroke-width="4"/>`;
+  if(has('pitot'))s+=`<path d="M143 262q-7 22 3 50l10 -2q-7 -24 -2 -46z" fill="#d62828" stroke="#8f1414" stroke-width="1.2"/><path d="M146 282l9 -1M147 292l9 -1" stroke="#fff" stroke-width="2.4"/>`;
+  if(has('bird'))s+=`<ellipse cx="116" cy="236" rx="13" ry="10" fill="#c9d3da" stroke="#77858f" stroke-width="1.6"/><path d="M106 240q10 6 22 2q-6 8 -16 6z" fill="#7b3a2c" opacity=".55"/><path d="M128 226q12 -8 16 -2q-6 6 -16 2z" fill="#f2f2f2" stroke="#9a9a9a"/><path d="M100 248q-8 6 -4 10q6 -2 4 -10z" fill="#d9d1c7" stroke="#9a8f82"/>`;
+  if(has('crack'))s+=`<path d="M184 204l8 8l-3 6l10 -4l6 7M192 212l9 -7M189 218l-5 3" stroke="#f4fbff" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  // wing, pylon, nacelle
+  s+=`<path d="M460 288L700 282L790 300L780 308L520 316Z" fill="#dde7ed" stroke="#2f4f66" stroke-width="2.5"/><path d="M640 300L776 304" stroke="#97adbd" stroke-width="1.6"/>`;
+  if(has('ledent'))s+=`<path d="M478 296q8 3 16 2q-6 6 -14 4z" fill="#8c9ca7" stroke="#5f6f7a" stroke-width="1.2"/><path d="M482 298q6 1 10 0" stroke="#f4fbff" stroke-width="1.2"/>`;
+  if(has('tool'))s+=`<g transform="rotate(-10 705 291)"><rect x="686" y="288" width="34" height="6" rx="3" fill="#7a8892" stroke="#3d4a52" stroke-width="1.4"/><rect x="694" y="288" width="16" height="6" rx="3" fill="#d62828"/><path d="M720 284a7 7 0 1 1 0 14l-3-4h4v-6h-4z" fill="#7a8892" stroke="#3d4a52" stroke-width="1.4"/><path d="M686 285a6 6 0 1 0 0 12" fill="none" stroke="#3d4a52" stroke-width="3"/></g>`;
+  s+=`<path d="M505 314L585 300L600 316L530 322Z" fill="#c9d6de" stroke="#2f4f66" stroke-width="2"/>
+   <rect x="430" y="318" width="175" height="62" rx="28" fill="url(#wkNac)" stroke="#2f4f66" stroke-width="2.5"/>
+   <path d="M470 320v58M540 320v58" stroke="#b3c2cc" stroke-width="1.5"/>
+   <path d="M605 332L644 340V360L605 368Z" fill="#7e8a93" stroke="#2f4f66" stroke-width="2"/><path d="M644 344l10 6l-10 6z" fill="#5d6870"/>
+   <ellipse cx="436" cy="349" rx="13" ry="29" fill="#c9d6de" stroke="#2f4f66" stroke-width="2.5"/><ellipse cx="438" cy="349" rx="8" ry="23" fill="#142838"/><ellipse cx="439" cy="349" rx="3.5" ry="7" fill="#8aa0ae"/>`;
+  if(has('rag'))s+=`<path d="M440 334q-22 4 -26 14q8 4 4 14q14 -2 22 -10z" fill="#f28c28" stroke="#a9520f" stroke-width="1.5"/><path d="M418 346q8 2 18 -4M420 356q8 -2 16 -6" stroke="#ffd18a" stroke-width="2" fill="none"/>`;
+  s+=`<g fill="#9fb3c1"><rect x="476" y="377" width="14" height="3"/><rect x="516" y="378" width="14" height="3"/><rect x="556" y="377" width="14" height="3"/></g>`;
+  if(has('latch'))s+=`<rect x="494" y="378" width="6" height="24" rx="2" fill="#7a8892" stroke="#3d4a52" stroke-width="1.3" transform="rotate(22 497 379)"/><rect x="486" y="396" width="9" height="6" rx="1.5" fill="#d62828" transform="rotate(22 497 379)"/>`;
+  if(has('oil'))s+=`<path d="M560 362q4 6 2 10q6 4 6 10l8 -2q-2 -8 -6 -10q2 -6 -4 -10z" fill="#3b2a1a" opacity=".85"/><circle cx="574" cy="392" r="3" fill="#3b2a1a"/><circle cx="575" cy="404" r="2.4" fill="#3b2a1a"/>`;
+  // tail strike scrape
+  if(has('tail'))s+=`<path d="M972 286L1028 252L1034 260L978 293Z" fill="#c4ccd2" opacity=".95"/><path d="M976 288l50 -31M980 292l48 -29M985 293l42 -26" stroke="#5c666d" stroke-width="1.6"/>`;
+  s+='</g>';
+  // landing gear (shorter legs: the airframe sits lower)
+  s+=`<rect x="200" y="351" width="8" height="73" fill="#6c7a84" stroke="#3d4a52" stroke-width="1.5"/>`;
+  s+=has('nose')?`<ellipse cx="204" cy="455" rx="26" ry="15" fill="#26323a"/><ellipse cx="204" cy="453" rx="10" ry="8" fill="#b7c4cc"/><path d="M180 462q24 8 48 0" stroke="#1a2329" stroke-width="3" fill="none"/>`
+   :`<circle cx="204" cy="448" r="21" fill="#26323a"/><circle cx="204" cy="448" r="9" fill="#b7c4cc"/>`;
+  s+=`<path d="M630 345L700 349L690 385L640 383Z" fill="#dde7ed" stroke="#2f4f66" stroke-width="1.8"/>
+   <rect x="641" y="353" width="11" height="71" fill="#6c7a84" stroke="#3d4a52" stroke-width="1.5"/><path d="M652 380l11 15l-11 12" stroke="#3d4a52" stroke-width="3" fill="none"/>
+   <circle cx="622" cy="440" r="29" fill="#26323a"/><circle cx="622" cy="440" r="13" fill="#b7c4cc"/><circle cx="672" cy="440" r="29" fill="#26323a"/><circle cx="672" cy="440" r="13" fill="#b7c4cc"/>
+   <path d="M622 440m-22 0a22 22 0 0 1 44 0" stroke="#3a4851" stroke-width="2" fill="none"/>`;
+  if(has('hyd'))s+=`<path d="M651 424q2 8 0 12" stroke="#8c1838" stroke-width="3"/><circle cx="651" cy="446" r="2.6" fill="#8c1838"/><circle cx="652" cy="458" r="2.2" fill="#8c1838"/>`;
+  if(has('tyre'))s+=`<path d="M598 448q8 12 22 18" stroke="#f0e6d8" stroke-width="5" stroke-linecap="round"/><path d="M600 450l4 -3M606 457l4 -3M613 462l3 -4" stroke="#e98f2e" stroke-width="2"/>`;
+  s+=`<path d="M560 470l14 -22h8v22z" fill="#f5c542" stroke="#8a6a10" stroke-width="2"/>`;
+  return s;
+ }
+
+
+
+ // =====================================================================
+ //  PROCEDURE — edit these lists to match your department's refuelling SOP.
+ //  CONNECT_SEQUENCE must be done in this order before the hose goes on.
+ //  DISCONNECT_SEQUENCE must be done in this order after refuelling.
+ // =====================================================================
+ const CONNECT_SEQUENCE=[
+  {id:'AG',a:'A',b:'G',name:'Ground aircraft → earth point',why:'Grounding the aircraft first gives its static charge a safe path into the earth.'},
+  {id:'BG',a:'B',b:'G',name:'Ground bowser → earth point',why:'Grounding the bowser drains its static charge safely into the earth.'},
+  {id:'AB',a:'A',b:'B',name:'Bond bowser ↔ aircraft',why:'Bonding the bowser to the aircraft keeps them at the same electrical potential, so no spark can jump between them.'},
+  {id:'P',solo:'P',name:'Refueller touches static plate',why:'Touching the static discharge plate removes static from your own body before you handle the nozzle.'}
+ ];
+ const DISCONNECT_SEQUENCE=['H','AB','BG','AG'];   // exact reverse: hose first … aircraft ground cable last
+ const CHECKS=[{id:'E',name:'Fire extinguisher in position'},{id:'C',name:'Safety cones placed'}];
+ const SHIFT_AIRCRAFT=3;
+ const FLOW_FULL=650,FLOW_SLOW=150,DRIVER_DELAY=.6,SPOOL=.45,LIMIT_MARGIN=350;   // kg/s, seconds, kg
+
+ const POINTS={
+  A:{x:646,y:398,label:'Aircraft bond point',lx:540,ly:452,icon:'✈️',col:'#2b7bd0'},
+  B:{x:880,y:415,label:'Bowser bond reel',lx:880,ly:330,icon:'🔗',col:'#2b7bd0'},
+  G:{x:760,y:478,label:'Earth point',lx:668,ly:505,icon:'',col:'#1d2b36'},
+  P:{x:1052,y:440,label:'Static plate',lx:1052,ly:500,icon:'✋',col:'#7a4fc9'},
+  H:{x:990,y:402,label:'Fuel hose',lx:990,ly:368,icon:'⛽',col:'#e08a12'},
+  E:{x:1112,y:398,label:'Extinguisher',lx:1130,ly:362,icon:'🧯',col:'#d6343f'},
+  C:{x:1162,y:456,label:'Cones',lx:1162,ly:500,icon:'🚧',col:'#f08c28'},
+  R:{x:735,y:361},VENT:{x:782,y:353}
+ };
+ const STEP_BY_PAIR={};CONNECT_SEQUENCE.forEach(s=>{if(!s.solo)STEP_BY_PAIR[[s.a,s.b].sort().join('')]=s});
+ const $f=id=>document.getElementById(id);
+ const stage=$f('fuelStage');
+ let st=null,raf=null,timers=[];
+ const fmt=n=>Math.round(n).toLocaleString('en-SG');
+
+ function newState(){return {running:false,aircraft:0,score:0,spills:0,phase:'idle'}}
+ st=newState();
+
+ // ---------------- drawing ----------------
+ function cablePath(p,q,sag=46){const mx=(p.x+q.x)/2,my=Math.max(p.y,q.y)+sag;return `M${p.x} ${p.y}Q${mx} ${my} ${q.x} ${q.y}`}
+ function cableMid(p,q,sag=46){return {x:(p.x+2*((p.x+q.x)/2)+q.x)/4,y:(p.y+2*(Math.max(p.y,q.y)+sag)+q.y)/4}}
+ const HOSE_CTRL={x:850,y:470};
+ function hoseMid(){const p=POINTS.H,q=POINTS.R;return {x:(p.x+2*HOSE_CTRL.x+q.x)/4,y:(p.y+2*HOSE_CTRL.y+q.y)/4}}
+ function cutTarget(id){if(id==='H')return hoseMid();const s=CONNECT_SEQUENCE.find(s=>s.id===id);return cableMid(POINTS[s.a],POINTS[s.b])}
+ function truck(){return `<g>
+   <rect x="845" y="352" width="300" height="86" rx="34" fill="#eef3f6" stroke="#2f4f66" stroke-width="3"/>
+   <rect x="845" y="384" width="300" height="16" fill="#f5c542"/><text x="1000" y="397" text-anchor="middle" font-size="14" font-weight="950" fill="#2f4f66" letter-spacing="2">JET A-1 · AERO BUDDIES FUEL</text>
+   <rect x="1140" y="368" width="52" height="78" rx="10" fill="#2b7bd0" stroke="#1d4f86" stroke-width="3"/><rect x="1150" y="376" width="34" height="26" rx="5" fill="#bfe3fa"/>
+   <rect x="840" y="436" width="356" height="14" rx="5" fill="#3e4c56"/>
+   <g fill="#26323a"><circle cx="900" cy="458" r="20"/><circle cx="950" cy="458" r="20"/><circle cx="1150" cy="458" r="20"/></g>
+   <g fill="#b7c4cc"><circle cx="900" cy="458" r="8"/><circle cx="950" cy="458" r="8"/><circle cx="1150" cy="458" r="8"/></g>
+   <circle cx="990" cy="402" r="20" fill="#3e4c56" stroke="#1d2b36" stroke-width="3"/><circle cx="990" cy="402" r="9" fill="#9aa8b2"/>
+   <circle cx="880" cy="415" r="13" fill="#3e4c56" stroke="#1d2b36" stroke-width="2"/>
+   <rect x="1040" y="430" width="24" height="18" rx="3" fill="#b8a3e8" stroke="#5a3aa0" stroke-width="2"/>
+  </g>`}
+ function earthPoint(){const g=POINTS.G;return `<g><circle cx="${g.x}" cy="${g.y}" r="15" fill="#f5c542" stroke="#1d2b36" stroke-width="3"/><path d="M${g.x} ${g.y-9}v8M${g.x-8} ${g.y-1}h16M${g.x-5} ${g.y+3}h10M${g.x-2} ${g.y+7}h4" stroke="#1d2b36" stroke-width="2.4" stroke-linecap="round"/></g>`}
+ function refueller(){return `<g transform="translate(812 400)"><ellipse cx="0" cy="70" rx="16" ry="4" fill="#556269" opacity=".4"/><rect x="-9" y="22" width="18" height="30" rx="5" fill="#f2a12b"/><path d="M-5 50v18M5 50v18" stroke="#1d3448" stroke-width="7" stroke-linecap="round"/><circle cx="0" cy="12" r="9" fill="#b98258"/><path d="M-9 9q9-12 18 0" fill="#f5c542"/><path d="M-9 28l-9 14M9 28l10 12" stroke="#f2a12b" stroke-width="6" stroke-linecap="round"/></g>`}
+ function tag(x,y,text){const w=text.length*8.6+20;return `<g pointer-events="none"><rect x="${x-w/2}" y="${y-14}" width="${w}" height="26" rx="8" fill="#14283a" opacity=".9"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${text}</text></g>`}
+ function marker(k,extraClass=''){const p=POINTS[k];return `<g class="fuel-pt ${extraClass}"><circle cx="${p.x}" cy="${p.y}" r="21" fill="#fff" fill-opacity=".86" stroke="${p.col}" stroke-width="4"/>${p.icon?`<text x="${p.x}" y="${p.y+7}" text-anchor="middle" font-size="19">${p.icon}</text>`:''}</g>`}
+
+ function render(){
+  const on=new Set();let s=scene(on);
+  s+=truck()+earthPoint()+refueller();
+  // placed safety items
+  if(st.placed&&st.placed.E)s+=`<text x="520" y="468" text-anchor="middle" font-size="40">🧯</text>`;
+  if(st.placed&&st.placed.C)s+=`<path d="M420 472l10-26 10 26zM690 506l10-26 10 26zM300 506l10-26 10 26z" fill="#f47c2c" stroke="#b9541a" stroke-width="2"/><path d="M424 463h12M694 497h12M304 497h12" stroke="#fff" stroke-width="3"/>`;
+  // spill
+  s+=`<g id="fuelSpill" opacity="${st.spillAmt?1:0}"><path d="M${POINTS.VENT.x} ${POINTS.VENT.y}q4 60 2 150" stroke="#e7c75a" stroke-width="6" stroke-linecap="round" opacity=".85" class="fuel-drip"/><ellipse id="fuelPuddle" cx="${POINTS.VENT.x+4}" cy="474" rx="${20+(st.spillAmt||0)*90}" ry="${4+(st.spillAmt||0)*10}" fill="#d8b440" opacity=".75"/></g>`;
+  // cables
+  (st.connected||[]).forEach(id=>{if(id==='P')return;const c=CONNECT_SEQUENCE.find(x=>x.id===id);const p=POINTS[c.a],q=POINTS[c.b];
+   s+=`<path d="${cablePath(p,q)}" fill="none" stroke="#2bb36c" stroke-width="4.5" stroke-linecap="round"/><circle cx="${p.x}" cy="${p.y}" r="6" fill="#2bb36c"/><circle cx="${q.x}" cy="${q.y}" r="6" fill="#2bb36c"/>`});
+  if(st.hose){const p=POINTS.H,q=POINTS.R;const d=`M${p.x} ${p.y}Q${HOSE_CTRL.x} ${HOSE_CTRL.y} ${q.x} ${q.y}`;
+   s+=`<path d="${d}" fill="none" stroke="#1d2b36" stroke-width="10" stroke-linecap="round"/><path id="fuelFlowLine" d="${d}" fill="none" stroke="#f5c542" stroke-width="4" stroke-dasharray="10 14" class="fuel-flow" opacity="0"/><rect x="${q.x-9}" y="${q.y-4}" width="18" height="12" rx="3" fill="#e08a12" stroke="#1d2b36" stroke-width="2"/>`}
+  else s+=`<rect x="${POINTS.R.x-11}" y="${POINTS.R.y-3}" width="22" height="9" rx="2" fill="#c9d6de" stroke="#5f7686" stroke-width="1.5"/>`;
+  // interactive markers + labels
+  if(st.phase==='setup'){
+   ['A','B','G','P','H'].forEach(k=>{const done=(k==='P'&&st.connected.includes('P'))||(k==='H'&&st.hose);if(!done)s+=marker(k,st.sel===k?'sel':'')});
+   ['E','C'].forEach(k=>{if(!st.placed[k])s+=marker(k)});
+   ['A','B','G','P','H','E','C'].forEach(k=>{const done=(k==='P'&&st.connected.includes('P'))||(k==='H'&&st.hose)||(['E','C'].includes(k)&&st.placed[k]);if(!done)s+=tag(POINTS[k].lx,POINTS[k].ly,POINTS[k].label)});
+  }
+  if(st.phase==='disconnect'){
+   const left=DISCONNECT_SEQUENCE.filter(id=>id==='H'?st.hose:st.connected.includes(id));
+   left.forEach(id=>{const m=cutTarget(id);s+=`<g class="fuel-pt"><circle cx="${m.x}" cy="${m.y}" r="19" fill="#fff" fill-opacity=".9" stroke="#d6343f" stroke-width="4"/><text x="${m.x}" y="${m.y+7}" text-anchor="middle" font-size="18">✂️</text></g>`});
+  }
+  if(st.hintAt){s+=`<circle class="fuel-hint" cx="${st.hintAt.x}" cy="${st.hintAt.y}" r="34" fill="none" stroke="#ffcf33" stroke-width="6" stroke-dasharray="10 7"/>`}
+  stage.querySelector('svg').innerHTML=s;
+ }
+
+ // ---------------- side panel ----------------
+ function hud(){
+  $f('fuelPage').dataset.phase=st.phase; $f('fuelScore').textContent='Score: '+st.score;
+  $f('fuelAircraft').textContent='Aircraft: '+Math.max(1,st.aircraft)+' / '+SHIFT_AIRCRAFT;
+  $f('fuelSpills').textContent='Spills: '+st.spills;
+  const steps=$f('fuelSteps');
+  if(st.phase==='setup'){
+   const memory=st.aircraft>1;let html='';
+   CONNECT_SEQUENCE.forEach((c,i)=>{const done=st.connected.includes(c.id),next=!done&&st.connected.length===i;
+    html+=`<li class="${done?'done':next&&!memory?'next':''}">${done?'✓':i+1+'.'} ${done||!memory?c.name:'? ? ?'}</li>`});
+   html+=`<li class="${st.hose?'done':''}">${st.hose?'✓':CONNECT_SEQUENCE.length+1+'.'} ${st.hose||!memory?'Connect fuel hose to refuel panel':'? ? ?'}</li>`;
+   CHECKS.forEach(c=>{html+=`<li class="${st.placed[c.id]?'done':''} check">${st.placed[c.id]?'✓':'☐'} ${c.name}</li>`});
+   steps.innerHTML=html;$f('fuelStepsTitle').textContent=memory?'🧠 Safety setup · from memory (double points)':'📋 Safety setup · follow the procedure';
+  }else if(st.phase==='disconnect'){
+   const names={H:'Disconnect fuel hose'};CONNECT_SEQUENCE.forEach(c=>names[c.id]='Remove: '+c.name);
+   steps.innerHTML=DISCONNECT_SEQUENCE.map((id,i)=>{const done=st.removed.includes(id);return `<li class="${done?'done':''}">${done?'✓':i+1+'.'} ${st.aircraft>1&&!done?'? ? ?':names[id]}</li>`}).join('');
+   $f('fuelStepsTitle').textContent='🔓 Disconnect · reverse order';
+  }else if(st.phase==='pump'||st.phase==='hazard'){
+   $f('fuelStepsTitle').textContent='⛽ Refuelling · signal the bowser driver';
+   steps.innerHTML='<li>Start slow, go to full speed, then slow down early. Stop close to the target without passing the limit.</li>';
+  }else if(st.phase==='idle'||st.phase==='between'){steps.innerHTML='';$f('fuelStepsTitle').textContent='📋 Procedure'}
+  const pumping=st.phase==='pump'||st.phase==='hazard';
+  ['sigStart','sigSlow','sigFull','sigStop'].forEach(id=>$f(id).disabled=!(pumping||(st.phase==='setup'&&id==='sigStart')));
+  $f('sigDone').disabled=!(st.phase==='pump'&&st.signal==='stop'&&st.rate<1&&st.fuel>st.onboard+1);
+  gauge();
+ }
+ function gauge(){
+  if(!st.target){$f('fuelOrder').textContent='—';$f('fuelNow').textContent='—';$f('fuelRate').textContent='0';$f('fuelFill').style.height='0%';return}
+  const max=st.limit+600,pct=v=>Math.max(0,Math.min(100,v/max*100));
+  $f('fuelOrder').textContent='Fill to '+fmt(st.target)+' kg';$f('fuelLimitTxt').textContent='Spill limit '+fmt(st.limit)+' kg';
+  $f('fuelNow').textContent=fmt(st.fuel)+' kg';$f('fuelRate').textContent=fmt(st.rate);
+  $f('fuelFill').style.height=pct(st.fuel)+'%';$f('fuelTargetLine').style.bottom=pct(st.target)+'%';
+  $f('fuelLimitZone').style.bottom=pct(st.limit)+'%';$f('fuelLimitZone').style.height=(100-pct(st.limit))+'%';
+  const left=st.target-st.fuel;$f('fuelLeft').textContent=left>=0?fmt(left)+' kg to go':fmt(-left)+' kg over target';
+  $f('fuelFill').className=st.fuel>st.limit?'spill':st.fuel>st.target?'over':left<1200?'near':'';
+ }
+ function msg(t){$f('fuelMsg').textContent=t}
+ function driver(t){const b=$f('fuelDriver');b.textContent='🚚 '+t;b.classList.remove('hidden');clearTimeout(b._t);b._t=setTimeout(()=>b.classList.add('hidden'),2200)}
+ function banner(t,cls){const b=$f('fuelBanner');if(!t){b.classList.add('hidden');return}b.textContent=t;b.className='fuel-banner '+(cls||'')}
+ function later(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t}
+ function add(n,why){st.score=Math.max(0,st.score+n);hud()}
+
+ // ---------------- flow of a shift ----------------
+ function startFuel(){
+  stopFuel();st=newState();st.running=true;nextAircraft();
+ }
+ function nextAircraft(){
+  if(!st.running)return;
+  if(st.aircraft>=SHIFT_AIRCRAFT){endShift('🏁 Shift complete!');return}
+  st.aircraft++;
+  Object.assign(st,{phase:'setup',connected:[],placed:{},hose:false,removed:[],sel:null,hintAt:null,spillAmt:0,
+   onboard:Math.round((2000+Math.random()*2000)/100)*100,uplift:Math.round((5000+Math.random()*4000)/500)*500,
+   rate:0,signal:'stop',pending:[],started:false,hazard:null,hazardDone:false,setupStart:performance.now()});
+  st.target=st.onboard+st.uplift;st.limit=st.target+LIMIT_MARGIN;st.fuel=st.onboard;
+  st.hazardAt=Math.random()<.65?st.onboard+st.uplift*(.25+Math.random()*.4):Infinity;
+  banner(null);render();hud();
+  msg(st.aircraft===1?'✈️ Aircraft '+st.aircraft+': follow the procedure card. Tap two points to clip a cable between them.'
+   :'✈️ Aircraft '+st.aircraft+': do the safety setup from memory — double points! (Hint costs 50.)');
+ }
+ function memMul(){return st.aircraft>1?2:1}
+ function nextConnect(){return CONNECT_SEQUENCE[st.connected.length]}
+ function setupTap(k){
+  if(k==='E'||k==='C'){if(st.placed[k])return;st.placed[k]=true;add(50*memMul());window.aeroSfx?.('win');msg('✅ '+(k==='E'?'Fire extinguisher positioned within reach.':'Cones placed to mark the refuelling safety zone.'));st.sel=null;render();hud();return}
+  if(k==='H'){
+   if(st.connected.length<CONNECT_SEQUENCE.length){add(-100);window.aeroSfx?.('buzzer');msg('⚡ STOP! Spark risk. Bond and ground everything before the hose goes on. −100');st.sel=null;render();return}
+   if(st.hose)return;st.hose=true;add(50*memMul());window.aeroSfx?.('win');msg('✅ Hose connected to the refuel panel. Place any missing safety items, then signal ▶ Start.');st.sel=null;render();hud();return}
+  if(k==='P'){const n=nextConnect();
+   if(n&&n.solo==='P'){st.connected.push('P');add(50*memMul());window.aeroSfx?.('win');msg('✅ '+n.why);}
+   else if(st.connected.includes('P'))return;
+   else{add(-50);window.aeroSfx?.('lose');msg('❌ Not yet. Next step: '+(st.aircraft>1?'think about the order…':n.name)+'. −50')}
+   st.sel=null;render();hud();return}
+  // A, B, G: pick two points
+  if(!st.sel){st.sel=k;render();msg('Clip selected at '+POINTS[k].label+'. Now tap where the other end goes.');return}
+  if(st.sel===k){st.sel=null;render();return}
+  const step=STEP_BY_PAIR[[st.sel,k].sort().join('')];st.sel=null;
+  if(!step){render();msg('Those two points are not connected in this procedure.');return}
+  if(st.connected.includes(step.id)){render();msg('That cable is already connected.');return}
+  const n=nextConnect();
+  if(n&&n.id===step.id){st.connected.push(step.id);add(50*memMul());window.aeroSfx?.('win');msg('✅ '+step.name+'. '+step.why)}
+  else{add(-50);window.aeroSfx?.('lose');msg('❌ Wrong order. '+(st.aircraft>1?'Think: what must be connected first?':'Next step is: '+n.name+'.')+' −50')}
+  render();hud();
+ }
+ // signals to the bowser driver
+ function signal(cmd){
+  if(st.phase==='setup'&&cmd==='start'){
+   if(!st.hose){add(-50);window.aeroSfx?.('lose');msg('❌ Complete the safety setup and connect the hose first. −50');return}
+   const miss=CHECKS.filter(c=>!st.placed[c.id]);if(miss.length){add(-50);window.aeroSfx?.('lose');msg('❌ Before starting: '+miss.map(c=>c.name.toLowerCase()).join(' and ')+'. −50');return}
+   const secs=(performance.now()-st.setupStart)/1000;const bonus=Math.max(0,Math.round((30-secs)*5));if(bonus)add(bonus);
+   st.phase='pump';render();hud();msg('⛽ Refuelling! Fill to '+fmt(st.target)+' kg. Speed bonus for setup: +'+bonus+'.');st.last=performance.now();raf=requestAnimationFrame(loop);
+  }
+  if(st.phase!=='pump'&&st.phase!=='hazard')return;
+  if(st.phase==='hazard'&&cmd!=='stop'){hazardFail('You signalled the bowser to pump during a safety hazard!');return}
+  if((cmd==='slow'||cmd==='full')&&!st.started){msg('Signal ▶ Start first — refuelling always begins slowly.');return}
+  if(cmd==='start'){if(st.signal!=='stop')return;st.started=true;cmd='slow'}
+  st.pending.push({cmd,at:performance.now()/1000+DRIVER_DELAY});
+  const say={slow:'Copy — slow flow.',full:'Copy — full speed!',stop:'Copy — stopping!'}[cmd];
+  driver(say);$f('fuelSignalNow').textContent={slow:'🐢 SLOW',full:'⏩ FULL',stop:'✋ STOP'}[cmd];
+  if(st.phase==='hazard'&&cmd==='stop')hazardStop();
+  window.aeroSfx?.('tick',9);
+ }
+ function loop(t){
+  if(!st.running||(st.phase!=='pump'&&st.phase!=='hazard'&&st.phase!=='spill'))return;
+  const dt=Math.min(.05,(t-st.last)/1000);st.last=t;const now=t/1000;
+  while(st.pending.length&&st.pending[0].at<=now){st.signal=st.pending.shift().cmd}
+  const want=st.signal==='full'?FLOW_FULL:st.signal==='slow'?FLOW_SLOW:0;
+  st.rate+=(want-st.rate)*Math.min(1,dt/SPOOL);if(want===0&&st.rate<4)st.rate=0;
+  if(st.phase==='spill'){st.spillAmt=Math.min(1,st.spillAmt+dt*.8);const p=$f('fuelPuddle');if(p){p.setAttribute('rx',20+st.spillAmt*90);p.setAttribute('ry',4+st.spillAmt*10)}
+   if(st.spillAmt>=1)return;raf=requestAnimationFrame(loop);return}
+  st.fuel+=st.rate*dt;
+  const fl=$f('fuelFlowLine');if(fl){fl.setAttribute('opacity',st.rate>5?1:0);fl.style.animationDuration=(st.rate>5?Math.max(.15,90/st.rate):1)+'s'}
+  if(st.phase==='pump'&&!st.hazardDone&&st.fuel>=st.hazardAt)startHazard(now);
+  if(st.phase==='hazard'&&!st.hazard.stopped&&now>st.hazard.deadline){hazardFail('The bowser kept pumping during the hazard.');return}
+  if(st.fuel>st.limit){spill();return}
+  hud();raf=requestAnimationFrame(loop);
+ }
+ const HAZARDS=[
+  {t:'⚡ LIGHTNING WITHIN 5 KM — STOP REFUELLING!',why:'Refuelling stops during nearby lightning because a strike could ignite fuel vapour.'},
+  {t:'🚗 VEHICLE ENTERED THE SAFETY ZONE — STOP!',why:'No vehicles may enter the refuelling zone — engines and exhausts are ignition sources.'},
+  {t:'💧 LEAK AT THE HOSE COUPLING — STOP!',why:'Any fuel leak means stop immediately, then find and fix the cause before restarting.'}];
+ function startHazard(now){st.hazardDone=true;st.phase='hazard';const h=HAZARDS[Math.floor(Math.random()*HAZARDS.length)];st.hazard={...h,deadline:now+3.0,stopped:false};
+  banner(h.t,'danger');window.aeroSfx?.('buzzer');msg('🚨 Signal ✋ STOP now! (Space bar works too)');hud()}
+ function hazardStop(){if(st.hazard.stopped)return;st.hazard.stopped=true;add(100);msg('✅ Good stop! '+st.hazard.why+' +100');banner('⏸ Standing by…','wait');
+  later(()=>{if(!st.running||st.phase!=='hazard')return;st.phase='pump';banner('✅ ALL CLEAR — you may resume','ok');later(()=>banner(null),1600);msg('All clear. Signal ▶ Start (slow) again, then build up speed.');st.started=false;hud()},3000)}
+ function hazardFail(reason){roundFail('🚨 '+reason+' Refuelling must stop immediately for any hazard.')}
+ function spill(){st.phase='spill';st.spills++;st.pending=[];st.signal='stop';st.spillAmt=.05;render();const g=$f('fuelSpill');if(g)g.setAttribute('opacity',1);
+  banner('🛢 FUEL SPILL! Tank overfilled','danger');window.aeroSfx?.('buzzer');hud();
+  roundFail('Fuel spilled from the wing vent. Signal Slow earlier — the bowser needs time to slow down.',true);st.last=performance.now();raf=requestAnimationFrame(loop)}
+ function roundFail(text,keepLoop){
+  if(!keepLoop)cancelAnimationFrame(raf);
+  if(st.phase!=='spill')st.phase='between';
+  msg('❌ '+text+' This aircraft is grounded for a clean-up. Next aircraft coming…');hud();
+  later(()=>{cancelAnimationFrame(raf);nextAircraft()},3400);
+ }
+ function complete(){
+  if(st.phase!=='pump'||st.signal!=='stop'||st.rate>=1)return;
+  const diff=st.fuel-st.target,ad=Math.abs(diff);
+  let pts,verdict;
+  if(ad<=50){pts=500;verdict='🎯 Perfect uplift!'}else if(ad<=150){pts=350;verdict='👍 Very close!'}else if(ad<=300){pts=200;verdict='OK, slightly '+(diff<0?'short.':'over.')}else{pts=diff<0?60:120;verdict=diff<0?'Too short — the aircraft is under-fuelled.':'Well over the order.'}
+  add(pts);window.aeroSfx?.(ad<=150?'fanfare':'win');
+  st.phase='disconnect';st.removed=[];banner(null);render();hud();
+  msg(verdict+' Final '+fmt(st.fuel)+' kg (target '+fmt(st.target)+'). +'+pts+'. Now disconnect in reverse order — tap ✂️.');
+ }
+ function disconnectTap(id){
+  const next=DISCONNECT_SEQUENCE[st.removed.length];
+  if(id!==next){add(-50);window.aeroSfx?.('lose');msg('❌ Wrong order. '+(next==='H'?'The fuel hose comes off first.':'Remove in reverse order — next: '+CONNECT_SEQUENCE.find(c=>c.id===next).name+'.')+' −50');return}
+  st.removed.push(id);if(id==='H')st.hose=false;else st.connected=st.connected.filter(x=>x!==id);
+  add(50);window.aeroSfx?.('win');render();hud();
+  if(st.removed.length===DISCONNECT_SEQUENCE.length){
+   add(100);window.aeroSfx?.('fanfare');st.phase='between';banner('✅ Aircraft '+st.aircraft+' refuelled safely! +100','ok');
+   msg('✈️ Refuelling complete and all equipment removed safely.'+(st.aircraft<SHIFT_AIRCRAFT?' Next aircraft coming…':''));
+   later(()=>{banner(null);nextAircraft()},2200);
+  }else msg('✅ Removed. Keep going — reverse order.');
+ }
+ function endShift(reason){
+  st.running=false;st.phase='idle';cancelAnimationFrame(raf);timers.forEach(clearTimeout);timers=[];
+  banner(null);render();hud();msg(reason+' Final score: '+st.score+' · Spills: '+st.spills+'.');
+  later(()=>window.showScoreEntry?.('fuel',st.score),700);
+ }
+ function stopFuel(){if(st)st.running=false;cancelAnimationFrame(raf);timers.forEach(clearTimeout);timers=[];banner(null);const b=$f('fuelDriver');if(b)b.classList.add('hidden')}
+ function hint(){
+  if(!st.running)return;
+  if(st.phase==='setup'){let k=null;const n=nextConnect();
+   if(n){if(n.solo)k=n.solo;else k=st.sel===n.a?n.b:n.a}else if(!st.hose)k='H';else k=['E','C'].find(x=>!st.placed[x]);
+   if(!k)return;add(-50);st.hintAt=POINTS[k];render();later(()=>{st.hintAt=null;if(st.running)render()},1800);
+   msg('💡 Look at the highlighted point'+(n&&!n.solo?' — it is one end of the next cable.':'.')+' −50');}
+  else if(st.phase==='pump'){add(-50);msg('💡 The driver reacts after about half a second and the pump takes time to slow. Signal 🐢 Slow about 1,000 kg before the target, then ✋ Stop about 150 kg before it. −50')}
+  else if(st.phase==='disconnect'){const id=DISCONNECT_SEQUENCE[st.removed.length];add(-50);st.hintAt=cutTarget(id);render();later(()=>{st.hintAt=null;if(st.running)render()},1800);msg('💡 Tap the highlighted ✂️ next. −50')}
+ }
+ // ---------------- input ----------------
+ function svgPoint(e){const svg=stage.querySelector('svg'),m=svg.getScreenCTM();if(!m)return null;const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(m.inverse());return {x:p.x,y:p.y,scale:m.a}}
+ stage.addEventListener('pointerdown',e=>{
+  if(!st.running)return;const p=svgPoint(e);if(!p)return;const r=Math.max(30,26/p.scale);
+  let cands=[];
+  if(st.phase==='setup')cands=['A','B','G','P','H','E','C'].map(k=>({k,...POINTS[k]}));
+  else if(st.phase==='disconnect')cands=DISCONNECT_SEQUENCE.filter(id=>id==='H'?st.hose:st.connected.includes(id)).map(id=>({k:id,...cutTarget(id)}));
+  let best=null,bd=r;cands.forEach(c=>{const d=Math.hypot(c.x-p.x,c.y-p.y);if(d<bd){bd=d;best=c}});
+  if(!best)return;
+  if(st.phase==='setup')setupTap(best.k);else disconnectTap(best.k);
+ });
+ $f('sigStart').onclick=()=>signal('start');$f('sigSlow').onclick=()=>signal('slow');$f('sigFull').onclick=()=>signal('full');$f('sigStop').onclick=()=>signal('stop');
+ $f('sigDone').onclick=complete;$f('fuelStart').onclick=startFuel;$f('fuelHint').onclick=hint;
+ $f('fuelChoice').onclick=()=>window.openMission('fuel');
+ document.addEventListener('keydown',e=>{
+  if($f('fuelPage').classList.contains('hidden')||!st.running)return;
+  if(e.target.closest&&e.target.closest('input,textarea,select'))return;
+  if(!$f('scoreEntry').classList.contains('hidden'))return;
+  const k={' ':'stop','s':'slow','f':'full','Enter':'start'}[e.key];if(!k)return;e.preventDefault();signal(k);
+ });
+ window.startFuel=startFuel;window.fuelStop=stopFuel;window.fuelIsRunning=()=>!!(st&&st.running);
+ window.fuelEnd=reason=>{if(st.running)endShift(reason)};
+ window.fuelState=()=>st;window.__fuelPoints=POINTS;window.__fuelCut=cutTarget;
+ // music: intense near the target or during a hazard
+ window.fuelIntensity=()=>!st.running?0:(st.phase==='hazard'||st.phase==='spill'||(st.phase==='pump'&&st.target-st.fuel<1500))?2:1;
+ render();hud();
+})();
+
+</script>
+</body></html>
